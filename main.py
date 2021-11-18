@@ -1,4 +1,4 @@
-from discord_components import Button, ComponentsBot
+from discord_components import ComponentsBot
 from selections import war_selection, war_declaration
 import utils
 
