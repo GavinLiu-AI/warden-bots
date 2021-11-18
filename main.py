@@ -1,5 +1,6 @@
 from discord_components import ComponentsBot
-from selections import war_selection, war_declaration, role_selection
+from war_announcement import war_declaration, war_selection
+from survey import role_selection
 import utils
 
 import configs
