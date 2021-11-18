@@ -76,6 +76,7 @@ async def select_time(ctx, bot):
 
 async def start(ctx, bot):
     try:
+        await ctx.send('Please fill out information for war announcements')
         zone = await select_zone(ctx, bot)
         offense = await select_offense(ctx, bot)
         date = await select_date(ctx, bot)
