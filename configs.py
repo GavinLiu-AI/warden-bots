@@ -1,1 +1,1 @@
-WAR_BOT_TOKEN = 'OTEwNDE2ODMzNDk1MDUyMzE5.YZShvw.uIjgGMaMry3YgLbdca8xYaIC8tg'
+WAR_BOT_TOKEN = 'token'
