@@ -1,5 +1,5 @@
 from discord_components import ComponentsBot
-from war_announcement import war_declaration, war_selection
+from war_announcement import war_declaration
 from survey import role_selection
 import utils
 
@@ -45,7 +45,7 @@ async def declare(ctx, *args):
         return
 
     try:
-        zone, offense, date, time = await war_selection.start(ctx, bot)
+        zone, offense, date, time = await war_declaration.start(ctx, bot)
 
         custom_msg = ''
         if args:
