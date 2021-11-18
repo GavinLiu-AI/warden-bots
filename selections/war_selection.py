@@ -1,4 +1,4 @@
-from discord_components import Select, SelectOption, Button
+from discord_components import Select, SelectOption
 import datetime
 
 
@@ -36,19 +36,26 @@ async def select_zone(ctx, bot):
 
 async def select_offense(ctx, bot):
     custom_id = 'select2'
-    options = ['Offensive', 'Defensive']
-    await set_selections(ctx, 'Select Offensive or Defensive War', options, custom_id)
+    options = ['Offense', 'Defense', 'Invasion']
+    await set_selections(ctx, 'Select Offense/Defence/Invasion', options, custom_id)
     interaction = await wait_for_input(bot, custom_id)
     await send_message(interaction)
 
     return interaction.values[0]
 
 
+def get_month_day(date):
+    _, month, day = date.split('-')
+    return month + '/' + day
+
+
 async def select_date(ctx, bot):
     custom_id = 'select3'
     today = datetime.datetime.today().date()
-    options = [str(today + datetime.timedelta(days=1)),
-               str(today + datetime.timedelta(days=2))]
+    dates = [str(today),
+             str(today + datetime.timedelta(days=1)),
+             str(today + datetime.timedelta(days=2))]
+    options = [get_month_day(date) for date in dates]
     await set_selections(ctx, 'Select Date', options, custom_id)
     interaction = await wait_for_input(bot, custom_id)
     await send_message(interaction)
@@ -65,16 +72,6 @@ async def select_time(ctx, bot):
     await send_message(interaction)
 
     return interaction.values[0]
-
-
-async def confirmation(ctx, bot, zone, offense, date, time):
-    await ctx.send("Please confirm: {0} {1} war at {2} PST on {3}".format(zone, offense, time, date),
-                   components=[Button(label="Confirm", custom_id="button1")])
-    interaction = await bot.wait_for(
-        "button_click", check=lambda inter: inter.custom_id == "button1", timeout=60
-    )
-
-    await interaction.send(content="Confirmed, announcing war!")
 
 
 async def start(ctx, bot):
