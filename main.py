@@ -1,22 +1,24 @@
 from discord_components import ComponentsBot
-
+from sys import exit
 import configs
 import utils
 from survey import role_selection
 from war_announcement import war_declaration
 
 bot = ComponentsBot('.')
+awake = True
 
 
 @bot.event
 async def on_ready():
-    channel = bot.get_channel(utils.BOT_COMMANDS_CHANNEL_ID)
-    await channel.send("{0} is online".format(bot.user.name))
     print(bot.user)
 
 
 @bot.event
 async def on_raw_reaction_add(payload):
+    if not awake:
+        return
+
     try:
         # Skip if bot added emoji
         if payload.user_id == bot.user.id:
@@ -43,6 +45,9 @@ async def on_raw_reaction_add(payload):
 @bot.command(brief='(Admin) Declare war and make war announcements',
              description='(Admin) Declare war and make war announcements')
 async def declare(ctx, *args):
+    if not awake:
+        return
+
     if not await utils.is_admin(ctx):
         return
 
@@ -69,6 +74,9 @@ async def declare(ctx, *args):
 @bot.command(brief='(Dev) Feature testing',
              description='(Dev) Feature testing')
 async def test(ctx):
+    if not awake:
+        return
+
     if not await utils.is_dev(ctx):
         return
 
@@ -76,6 +84,9 @@ async def test(ctx):
 @bot.command(brief='(Dev) Get channel ID',
              description='(Dev) Get channel ID')
 async def channel_id(ctx, channel_name=None):
+    if not awake:
+        return
+
     if not await utils.is_dev(ctx):
         return
 
@@ -97,9 +108,40 @@ async def channel_id(ctx, channel_name=None):
              description='Get bot status')
 async def status(ctx):
     try:
-        await ctx.send('{0} is online'.format(bot.user.name))
+        if awake:
+            await ctx.send('{0} is online'.format(bot.user.name))
+        else:
+            await ctx.send('{0} is online but deactivated. Type ".activate" command for activation.'.format(bot.user.name))
     except:
         await ctx.send('Error checking bot status')
+
+
+@bot.command(brief='(Admin) Deactivate bot',
+             description='(Admin) Deactivate bot')
+async def deactivate(ctx):
+    if not await utils.is_admin(ctx):
+        return
+
+    try:
+        await utils.log_in_channel(bot, 'Bot is now deactivated. Type command ".activate" for activation')
+        global awake
+        awake = False
+    except:
+        await ctx.send('Error during deactivation')
+
+
+@bot.command(brief='(Admin) Activate bot',
+             description='(Admin) Activate bot')
+async def activate(ctx):
+    if not await utils.is_admin(ctx):
+        return
+
+    try:
+        await utils.log_in_channel(bot, "Bot is now online.")
+        global awake
+        awake = True
+    except:
+        await ctx.send('Error during activation')
 
 
 bot.run(configs.WAR_BOT_TOKEN)
