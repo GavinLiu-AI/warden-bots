@@ -1,14 +1,16 @@
 import datetime
-import utils
-import discord
 import uuid
+
+import discord
+
+import utils
 
 
 async def select_zone(ctx, bot):
     custom_id = uuid.uuid4().hex
     options = ['Brightwood', 'Cutlass Keys', 'Ebonscale Reach', 'Everfall', 'First Light', 'Monarch\'s Bluffs',
                'Mourningdale', 'Reekwater', 'Restless Shore', 'Weaver\'s Fen', 'Windsward']
-    title = '**Select Zone**'
+    title = '**Please fill out information for war announcements**\n\n⚔ __**Select Zone**__'
     await utils.set_selections(ctx, title=title, options=options, custom_id=custom_id)
     interaction = await utils.wait_for_input(bot, custom_id)
     await utils.send_interation_message(interaction)
@@ -19,7 +21,7 @@ async def select_zone(ctx, bot):
 async def select_offense(ctx, bot):
     custom_id = uuid.uuid4().hex
     options = ['Offense', 'Defense', 'Invasion']
-    title = '**Select Offense/Defence/Invasion**'
+    title = '⚔ __**Select Offense/Defence/Invasion**__'
     await utils.set_selections(ctx, title=title, options=options, custom_id=custom_id)
     interaction = await utils.wait_for_input(bot, custom_id)
     await utils.send_interation_message(interaction)
@@ -39,7 +41,7 @@ async def select_date(ctx, bot):
              str(today + datetime.timedelta(days=1)),
              str(today + datetime.timedelta(days=2))]
     options = [get_month_day(date) for date in dates]
-    title = '**Select Date**'
+    title = '⚔ __**Select Date**__'
     await utils.set_selections(ctx, title=title, options=options, custom_id=custom_id)
     interaction = await utils.wait_for_input(bot, custom_id)
     await utils.send_interation_message(interaction)
@@ -51,7 +53,7 @@ async def select_time(ctx, bot):
     custom_id = uuid.uuid4().hex
     options = ['4PM', '4:30PM', '5PM', '5:30PM', '6PM', '6:30PM', '7PM', '7:30PM', '8PM', '8:30PM', '9PM', '9:30PM',
                '10PM', '10:30PM', '11PM']
-    title = '**Select Start Time (PST)**'
+    title = '⚔ __**Select Start Time (PST)**__'
     await utils.set_selections(ctx, title=title, options=options, custom_id=custom_id)
     interaction = await utils.wait_for_input(bot, custom_id)
     await utils.send_interation_message(interaction)
@@ -74,7 +76,6 @@ async def announce(ctx, channel, message, offense, emojis):
 
 async def start(ctx, bot):
     try:
-        await ctx.send('**Please fill out information for war announcements**')
         zone = await select_zone(ctx, bot)
         offense = await select_offense(ctx, bot)
         date = await select_date(ctx, bot)

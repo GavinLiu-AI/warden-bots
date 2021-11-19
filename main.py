@@ -1,9 +1,9 @@
 from discord_components import ComponentsBot
-from war_announcement import war_declaration
-from survey import role_selection
-import utils
 
 import configs
+import utils
+from survey import role_selection
+from war_announcement import war_declaration
 
 bot = ComponentsBot('.')
 
@@ -35,17 +35,6 @@ async def on_raw_reaction_add(payload):
                 await role_selection.send_dm(bot, user)
             else:
                 return
-
-        # # DM Introduction
-        # if utils.DM_INTRODUCTION_LABEL_MESSAGE in message.content:
-        #
-        #     user = await bot.fetch_user(user_id=payload.user_id)
-        #
-        #     # Returning/New player
-        #     if emoji_name == utils.YES_EMOJI:
-        #         await user.send('Yes')
-        #     else:
-        #         await user.send('no')
 
     except:
         await utils.log_in_channel(bot, "Error during on_raw_reaction_add")
