@@ -82,3 +82,19 @@ async def remove_other_reactions(bot, payload, message, emoji_name):
             for user in users:
                 if user.id == payload.user_id:
                     await message.remove_reaction(reaction.emoji, user)
+
+
+def get_online_msg(bot):
+    return '{0} is online'.format(bot.user.name)
+
+
+def get_deactivation_msg(bot):
+    return '{0} is online but deactivated. Type ".activate" command for activation.'.format(bot.user.name)
+
+
+async def get_interaction(bot, user, custom_id, options, title):
+    await set_selections(user, title=title, options=options, custom_id=custom_id)
+    interaction = await wait_for_input(bot, custom_id)
+    await send_interation_message(interaction)
+
+    return interaction.values[0]

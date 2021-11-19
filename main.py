@@ -61,7 +61,7 @@ async def declare(ctx, *args):
         emojis = [utils.YES_EMOJI, utils.MAYBE_EMOJI, utils.NO_EMOJI]
         message = utils.WAR_SIGNUP_LABEL_MESSAGE + "{0} {1} at {2} PST on {3}!**".format(zone, offense, time, date) + \
                   custom_msg + \
-                  "\n\nClick on one of the reactions to let us know your availability. " \
+                  "\n\nClick on one of the reactions to let us know your availability (Even if you haven't signed up on warboard). " \
                   "\n{0}: Attending\n{1}: Tentative\n{2}: Not Attending".format(utils.YES_EMOJI,
                                                                                 utils.MAYBE_EMOJI,
                                                                                 utils.NO_EMOJI)
@@ -109,9 +109,9 @@ async def channel_id(ctx, channel_name=None):
 async def status(ctx):
     try:
         if awake:
-            await ctx.send('{0} is online'.format(bot.user.name))
+            await ctx.send(utils.get_online_msg(bot))
         else:
-            await ctx.send('{0} is online but deactivated. Type ".activate" command for activation.'.format(bot.user.name))
+            await ctx.send(utils.get_deactivation_msg(bot))
     except:
         await ctx.send('Error checking bot status')
 
@@ -123,7 +123,7 @@ async def deactivate(ctx):
         return
 
     try:
-        await utils.log_in_channel(bot, 'Bot is now deactivated. Type command ".activate" for activation')
+        await ctx.send(utils.get_deactivation_msg(bot))
         global awake
         awake = False
     except:
@@ -137,7 +137,7 @@ async def activate(ctx):
         return
 
     try:
-        await utils.log_in_channel(bot, "Bot is now online.")
+        await ctx.send(utils.get_online_msg(bot))
         global awake
         awake = True
     except:

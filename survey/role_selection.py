@@ -10,12 +10,9 @@ async def init(bot, user):
         title = "Hello! 👋 You have indicated that you might be attending war/invasion." \
                 "\n\n**Please complete the following questions to be considered in our roster.** " + \
                 "\n\n⚠ __**Have you uploaded info via Wardens War Bot before?**__" + \
-                '\n(Select *No* if it is your first time interacting with this bot or you are unsure.)'
-        await utils.set_selections(user, title=title, options=options, custom_id=custom_id)
-        interaction = await utils.wait_for_input(bot, custom_id)
-        await utils.send_interation_message(interaction)
+                '\n(Select *No* if it is your first time interacting with this bot or if you are unsure.)'
 
-        return interaction.values[0]
+        return await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
     except:
         await utils.log_in_channel(bot, "Error during DM init with {0}".format(user.name))
 
@@ -36,12 +33,9 @@ async def get_ign_confirm(bot, user):
 
         custom_id = uuid.uuid4().hex
         options = [utils.YES, utils.NO]
-        title = '❔ __**Confirm your IGN is {0}?**__'.format(ign)
-        await utils.set_selections(user, title=title, options=options, custom_id=custom_id)
-        interaction = await utils.wait_for_input(bot, custom_id)
-        await utils.send_interation_message(interaction)
+        title = '❔ __**Confirm your IGN as {0}?**__'.format(ign)
 
-        return ign, interaction.values[0]
+        return ign, await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
     except:
         await utils.log_in_channel(bot, "Error during IGN prompt with {0}".format(user.name))
 
@@ -51,11 +45,8 @@ async def get_role(bot, user):
         custom_id = uuid.uuid4().hex
         options = ['🛡️ Tank', '🗡️ Melee DPS', '🏹 Range DPS', '🧙 Mage', '💚 Healer']
         title = '⚔ __**What is your in game role?**__'
-        await utils.set_selections(user, title=title, options=options, custom_id=custom_id)
-        interaction = await utils.wait_for_input(bot, custom_id)
-        await utils.send_interation_message(interaction)
 
-        return interaction.values[0]
+        return await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
     except:
         await utils.log_in_channel(bot, "Error during IGN prompt with {0}".format(user.name))
 
@@ -66,11 +57,8 @@ async def get_weapon(bot, user, string):
         options = ['Bow', 'Fire Staff', 'Great Axe', 'Hatchet', 'Ice Gauntlet', 'Life Staff', 'Musket', 'Rapier',
                    'Spear', 'Sword and Shield', 'Void Gauntlet', 'War Hammer']
         title = '🗡️ __**What is your ' + string + ' weapon?**__'
-        await utils.set_selections(user, title=title, options=options, custom_id=custom_id)
-        interaction = await utils.wait_for_input(bot, custom_id)
-        await utils.send_interation_message(interaction)
 
-        return interaction.values[0]
+        return await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
     except:
         await utils.log_in_channel(bot, "Error during IGN prompt with {0}".format(user.name))
 
@@ -130,24 +118,46 @@ async def get_gear_score(bot, user):
     return gear_score
 
 
-# def get_attributes(bot, user):
-#     strength, dex, intel, focus, con = await ask_gear_score(bot, user)
-#     while not gear_score:
-#         gear_score = await ask_gear_score(bot, user)
-#
-#     return gear_score
+async def get_company(bot, user):
+    try:
+        q = await user.send('🛡️ __**What is your company name?**__')
+
+        reply = await bot.wait_for(
+            "message",
+            timeout=300,
+            check=lambda m: m.author == user and m.channel.id == q.channel.id)
+        return reply.content.strip()
+    except:
+        await utils.log_in_channel(bot, "Error during IGN prompt with {0}".format(user.name))
+
+
+async def get_in_company(bot, user):
+    try:
+        custom_id = uuid.uuid4().hex
+        options = [utils.YES, utils.NO]
+        title = '🛡️ __**Are you in a company?**__'
+
+        return await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
+    except:
+        await utils.log_in_channel(bot, "Error during IGN prompt with {0}".format(user.name))
 
 
 async def send_dm(bot, user):
     try:
-        is_old_player = await init(bot, user)
-        # TODO: New/Old Player
+        is_returning_player = await init(bot, user)
 
+        # TODO: New/Old Player
         ign = await get_ign(bot, user)
+        in_company = await get_in_company(bot, user)
+        if in_company == utils.YES:
+            company = await get_company(bot, user)
+        else:
+            company = 'None'
         role = await get_role(bot, user)
         weapon_1, weapon_2 = await get_weapons(bot, user)
         gear_score = await get_gear_score(bot, user)
-        # attributes = await get_attributes(bot, user)
+
+        await user.send("Thank you for completing the survey, make sure to sign up at the war board in game. 😊")
 
     except:
         await utils.log_in_channel(bot, "Error during DM with {0}".format(user.name))
