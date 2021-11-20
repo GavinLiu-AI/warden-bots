@@ -1,10 +1,17 @@
 from discord_components import Select, SelectOption
+import datetime
+import spreadsheet
+
+GOOGLE_KEY = 'google-key.json'
+SPREADSHEET_ID = '1U9mfxT-v2KzFd6y57_lAR7CCl0wiBT29UwV4dDLqxqc'
+SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
 X_ID = 120341906818334721
 
 ANNOUNCEMENTS_CHANNEL_ID = 870222133115117568
 BOT_COMMANDS_CHANNEL_ID = 909256529788682302
 GENERAL_CHANNEL_ID = 870297428899803246
+WAR_SIGNUP_CHANNEL_ID = 911441115197083719
 
 ROLE_SELECT_MESSAGE_ID_PATH = 'temp/role-select-message-id'
 
@@ -20,7 +27,22 @@ NO_EMOJI = '❌'
 
 ADMIN_ROLES = ['Moderator', 'War-Lead', 'Master Warden', 'Grand Master Warden', 'Squad Lead', 'Wardens of the Hunt']
 
+UPDATE_OPTION_IGN = 'In Game Name'
+UPDATE_OPTION_COMP = 'Company'
+UPDATE_OPTION_ROLE = 'Role'
+UPDATE_OPTION_WEAPON = 'Weapons'
+UPDATE_OPTION_GS = 'Gear Score'
+UPDATE_OPTIONS = [UPDATE_OPTION_IGN, UPDATE_OPTION_COMP, UPDATE_OPTION_ROLE, UPDATE_OPTION_WEAPON, UPDATE_OPTION_GS]
+
+WARDEN_COMPANIES = ['Wardens of the Hunt', 'Wardens Rising']
+
+
 WAR_SIGNUP_LABEL_MESSAGE = '**War/Invasion Sign up: '
+DM_SURVEY_INTRO_MESSAGE = 'Hello! 👋 You have indicated that you might be attending war/invasion.' \
+                          '\n\n**Please complete the following questions to be considered in our roster.**' \
+                          '\n_(It will expire after 10 minutes)_'
+DM_SURVEY_RETURNING_PLAYER_MESSAGE = 'We have your information in the database!'
+DM_SURVEY_UPDATE_PROMPT = '\n\n__**Would you like to update anything today?**__'
 
 
 async def send_interation_message(interaction):
@@ -98,3 +120,27 @@ async def get_interaction(bot, user, custom_id, options, title):
     await send_interation_message(interaction)
 
     return interaction.values[0]
+
+
+def find_user_row(user_id):
+    data = spreadsheet.read()
+    ids = [int(row[0]) for row in data]
+    for row, id in enumerate(ids):
+        if id == user_id:
+            # Account for 0-index and sheet header
+            return row + 2
+    return 0
+
+
+async def upload_data(user, ign, is_warden, company, role, weapon_1, weapon_2, gear_score, update=False):
+    date = str(datetime.datetime.today().date())
+    new_data = [[str(user.id), str(user), ign, is_warden, company, role, weapon_1, weapon_2, gear_score, date]]
+
+    if update:
+        row = find_user_row(user.id)
+        if row != 0:
+            spreadsheet.update(new_data, range='data!A{0}'.format(row))
+        else:
+            await user.send('Cannot find user in database')
+    else:
+        spreadsheet.append(new_data)

@@ -62,13 +62,22 @@ async def announce(ctx, channel, message, offense, emojis):
         await ctx.send('Error during war announcement')
 
 
+async def confirm_war(ctx, bot, zone, offense, time, date):
+    custom_id = uuid.uuid4().hex
+    options = [utils.YES, utils.NO]
+    title = '⚔ __**Confirm war announcement: {0} {1} at {2} PST on {3}**__'.format(zone, offense, time, date)
+
+    return await utils.get_interaction(bot=bot, user=ctx, custom_id=custom_id, options=options, title=title)
+
+
 async def start(ctx, bot):
     try:
         zone = await select_zone(ctx, bot)
         offense = await select_offense(ctx, bot)
         date = await select_date(ctx, bot)
         time = await select_time(ctx, bot)
+        confirm = await confirm_war(ctx, bot, zone=zone, offense=offense, time=time, date=date)
 
-        return zone, offense, date, time
+        return zone, offense, date, time, confirm
     except:
         await ctx.send('Error during war declaration')

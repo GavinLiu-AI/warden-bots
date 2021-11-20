@@ -42,6 +42,19 @@ async def on_raw_reaction_add(payload):
         await utils.log_in_channel(bot, "Error during on_raw_reaction_add")
 
 
+@bot.command(brief='Update player information and loadout',
+             description='Update player information and loadout')
+async def update(ctx):
+    if not awake:
+        return
+
+    try:
+        user = await bot.fetch_user(user_id=ctx.author.id)
+        await role_selection.send_dm(bot, user)
+    except:
+        await ctx.send('Error during war declaration')
+
+
 @bot.command(brief='(Admin) Declare war and make war announcements',
              description='(Admin) Declare war and make war announcements')
 async def declare(ctx, *args):
@@ -52,21 +65,22 @@ async def declare(ctx, *args):
         return
 
     try:
-        zone, offense, date, time = await war_declaration.start(ctx, bot)
+        zone, offense, date, time, confirm = await war_declaration.start(ctx, bot)
 
-        custom_msg = ''
-        if args:
-            custom_msg = '\n\n' + ' '.join(args)
+        if confirm == utils.YES:
+            custom_msg = ''
+            if args:
+                custom_msg = '\n\n' + ' '.join(args)
 
-        emojis = [utils.YES_EMOJI, utils.MAYBE_EMOJI, utils.NO_EMOJI]
-        message = utils.WAR_SIGNUP_LABEL_MESSAGE + "{0} {1} at {2} PST on {3}!**".format(zone, offense, time, date) + \
-                  custom_msg + \
-                  "\n\nClick on one of the reactions to let us know your availability (Even if you haven't signed up on warboard). " \
-                  "\n{0}: Attending\n{1}: Tentative\n{2}: Not Attending".format(utils.YES_EMOJI,
-                                                                                utils.MAYBE_EMOJI,
-                                                                                utils.NO_EMOJI)
-        channel = bot.get_channel(utils.BOT_COMMANDS_CHANNEL_ID)
-        await war_declaration.announce(ctx, channel, message, offense, emojis)
+            emojis = [utils.YES_EMOJI, utils.MAYBE_EMOJI, utils.NO_EMOJI]
+            message = '@everyone\n' + utils.WAR_SIGNUP_LABEL_MESSAGE + "{0} {1} at {2} PST on {3}!**".format(zone, offense, time, date) + \
+                      custom_msg + \
+                      "\n\nClick on one of the reactions to let us know your availability (Even if you haven't signed up on warboard). " \
+                      "\n{0}: Attending\n{1}: Tentative\n{2}: Not Attending".format(utils.YES_EMOJI,
+                                                                                    utils.MAYBE_EMOJI,
+                                                                                    utils.NO_EMOJI)
+            channel = bot.get_channel(utils.WAR_SIGNUP_CHANNEL_ID)
+            await war_declaration.announce(ctx, channel, message, offense, emojis)
     except:
         await ctx.send('Error during war declaration')
 
