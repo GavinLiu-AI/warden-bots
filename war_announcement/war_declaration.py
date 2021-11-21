@@ -8,8 +8,7 @@ import utils
 
 async def select_zone(ctx, bot):
     custom_id = uuid.uuid4().hex
-    options = ['Brightwood', 'Cutlass Keys', 'Ebonscale Reach', 'Everfall', 'First Light', 'Monarch\'s Bluffs',
-               'Mourningdale', 'Reekwater', 'Restless Shore', 'Weaver\'s Fen', 'Windsward']
+    options = utils.OPTIONS_ZONES
     title = '**Please fill out information for war announcements**\n\n⚔ __**Select Zone**__'
 
     return await utils.get_interaction(bot=bot, user=ctx, custom_id=custom_id, options=options, title=title)
@@ -17,7 +16,7 @@ async def select_zone(ctx, bot):
 
 async def select_offense(ctx, bot):
     custom_id = uuid.uuid4().hex
-    options = ['Offense', 'Defense', 'Invasion']
+    options = utils.OPTIONS_WAR
     title = '⚔ __**Select Offense/Defence/Invasion**__'
 
     return await utils.get_interaction(bot=bot, user=ctx, custom_id=custom_id, options=options, title=title)
@@ -64,7 +63,7 @@ async def announce(ctx, channel, message, offense, emojis):
 
 async def confirm_war(ctx, bot, zone, offense, time, date):
     custom_id = uuid.uuid4().hex
-    options = [utils.YES, utils.NO]
+    options = utils.OPTIONS_YES_NO
     title = '⚔ __**Confirm war announcement: {0} {1} at {2} PST on {3}**__'.format(zone, offense, time, date)
 
     return await utils.get_interaction(bot=bot, user=ctx, custom_id=custom_id, options=options, title=title)
@@ -81,3 +80,15 @@ async def start(ctx, bot):
         return zone, offense, date, time, confirm
     except:
         await ctx.send('Error during war declaration')
+
+
+def get_announcement_message(zone, offense, time, date, custom_msg):
+    message = '\n' + utils.WAR_SIGNUP_LABEL_MESSAGE + \
+              "{0} {1} at {2} PST on {3}!**".format(zone, offense, time, date) + \
+              custom_msg + \
+              "\n\nClick on one of the reactions to let us know your availability. " \
+              "\n_(Please complete the survey if you receive one from Wardens War Bot. " \
+              "If the survey expires type .update in channel to add/edit your loadout)_" \
+              "\n{0}: Attending {1}: Tentative {2}: Not Attending"\
+                  .format(utils.YES_EMOJI, utils.MAYBE_EMOJI, utils.NO_EMOJI)
+    return message

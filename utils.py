@@ -3,6 +3,13 @@ import datetime
 import spreadsheet
 
 GOOGLE_KEY = 'google-key.json'
+# GOOGLE_KEY = '/home/chrisliuengr/wardens-bots/google-key.json'
+
+IMAGE_WAR = 'images/war.jpg'
+# IMAGE_WAR = '/home/chrisliuengr/wardens-bots/images/war.jpg'
+IMAGE_INVASION = 'images/invasion.jpg'
+# IMAGE_INVASION = '/home/chrisliuengr/wardens-bots/images/invasion.jpg'
+
 SPREADSHEET_ID = '1U9mfxT-v2KzFd6y57_lAR7CCl0wiBT29UwV4dDLqxqc'
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
@@ -13,10 +20,7 @@ BOT_COMMANDS_CHANNEL_ID = 909256529788682302
 GENERAL_CHANNEL_ID = 870297428899803246
 WAR_SIGNUP_CHANNEL_ID = 911441115197083719
 
-ROLE_SELECT_MESSAGE_ID_PATH = 'temp/role-select-message-id'
-
-IMAGE_WAR = 'images/war.jpg'
-IMAGE_INVASION = 'images/invasion.jpg'
+ADMIN_ROLES = ['Moderator', 'War-Lead', 'Master Warden', 'Grand Master Warden', 'Squad Lead', 'Wardens of the Hunt']
 
 YES = 'Yes'
 NO = 'No'
@@ -25,16 +29,23 @@ YES_EMOJI = '✅'
 MAYBE_EMOJI = '❔'
 NO_EMOJI = '❌'
 
-ADMIN_ROLES = ['Moderator', 'War-Lead', 'Master Warden', 'Grand Master Warden', 'Squad Lead', 'Wardens of the Hunt']
+OPTIONS_YES_NO = [YES, NO]
 
-UPDATE_OPTION_IGN = 'In Game Name'
-UPDATE_OPTION_COMP = 'Company'
-UPDATE_OPTION_ROLE = 'Role'
-UPDATE_OPTION_WEAPON = 'Weapons'
-UPDATE_OPTION_GS = 'Gear Score'
-UPDATE_OPTIONS = [UPDATE_OPTION_IGN, UPDATE_OPTION_COMP, UPDATE_OPTION_ROLE, UPDATE_OPTION_WEAPON, UPDATE_OPTION_GS]
+OPTION_UPDATE_IGN = 'In Game Name'
+OPTION_UPDATE_COMP = 'Company'
+OPTION_UPDATE_ROLE = 'Role'
+OPTION_UPDATE_WEAPON = 'Weapons'
+OPTION_UPDATE_GS = 'Gear Score'
+OPTIONS_UPDATES = [OPTION_UPDATE_IGN, OPTION_UPDATE_COMP, OPTION_UPDATE_ROLE, OPTION_UPDATE_WEAPON, OPTION_UPDATE_GS]
 
-WARDEN_COMPANIES = ['Wardens of the Hunt', 'Wardens Rising']
+OPTIONS_WARDEN_COMPANIES = ['Wardens of the Hunt', 'Wardens Rising']
+
+OPTIONS_ZONES = ['Brightwood', 'Cutlass Keys', 'Ebonscale Reach', 'Everfall', 'First Light', 'Monarch\'s Bluffs',
+               'Mourningdale', 'Reekwater', 'Restless Shore', 'Weaver\'s Fen', 'Windsward']
+OPTIONS_WAR = ['Offense', 'Defense', 'Invasion']
+OPTIONS_ROLES = ['🛡️ Tank', '🗡️ Melee DPS', '🏹 Range DPS', '🧙 Mage', '💚 Healer']
+OPTIONS_WEAPONS = ['Bow', 'Fire Staff', 'Great Axe', 'Hatchet', 'Ice Gauntlet', 'Life Staff', 'Musket', 'Rapier',
+                   'Spear', 'Sword and Shield', 'Void Gauntlet', 'War Hammer']
 
 
 WAR_SIGNUP_LABEL_MESSAGE = '**War/Invasion Sign up: '

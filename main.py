@@ -5,7 +5,7 @@ import utils
 from survey import role_selection
 from war_announcement import war_declaration
 
-bot = ComponentsBot('.')
+bot = ComponentsBot(',')
 awake = True
 
 
@@ -73,12 +73,8 @@ async def declare(ctx, *args):
                 custom_msg = '\n\n' + ' '.join(args)
 
             emojis = [utils.YES_EMOJI, utils.MAYBE_EMOJI, utils.NO_EMOJI]
-            message = '@everyone\n' + utils.WAR_SIGNUP_LABEL_MESSAGE + "{0} {1} at {2} PST on {3}!**".format(zone, offense, time, date) + \
-                      custom_msg + \
-                      "\n\nClick on one of the reactions to let us know your availability (Even if you haven't signed up on warboard). " \
-                      "\n{0}: Attending\n{1}: Tentative\n{2}: Not Attending".format(utils.YES_EMOJI,
-                                                                                    utils.MAYBE_EMOJI,
-                                                                                    utils.NO_EMOJI)
+            message = war_declaration.get_announcement_message(zone=zone, offense=offense, time=time, date=date,
+                                                               custom_msg=custom_msg)
             channel = bot.get_channel(utils.WAR_SIGNUP_CHANNEL_ID)
             await war_declaration.announce(ctx, channel, message, offense, emojis)
     except:

@@ -18,7 +18,7 @@ async def get_ign_confirm(bot, user):
             return ign, utils.NO
 
         custom_id = uuid.uuid4().hex
-        options = [utils.YES, utils.NO]
+        options = utils.OPTIONS_YES_NO
         title = '❔ __**Confirm your IGN as {0}?**__'.format(ign)
 
         return ign, await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
@@ -29,7 +29,7 @@ async def get_ign_confirm(bot, user):
 async def get_role(bot, user):
     try:
         custom_id = uuid.uuid4().hex
-        options = ['🛡️ Tank', '🗡️ Melee DPS', '🏹 Range DPS', '🧙 Mage', '💚 Healer']
+        options = utils.OPTIONS_ROLES
         title = '⚔ __**What is your in game role?**__'
 
         role = await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
@@ -41,8 +41,7 @@ async def get_role(bot, user):
 async def get_weapon(bot, user, string):
     try:
         custom_id = uuid.uuid4().hex
-        options = ['Bow', 'Fire Staff', 'Great Axe', 'Hatchet', 'Ice Gauntlet', 'Life Staff', 'Musket', 'Rapier',
-                   'Spear', 'Sword and Shield', 'Void Gauntlet', 'War Hammer']
+        options = utils.OPTIONS_WEAPONS
         title = '🗡️ __**What is your ' + string + ' weapon?**__'
 
         return await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
@@ -121,7 +120,7 @@ async def get_company(bot, user):
 async def get_in_company(bot, user):
     try:
         custom_id = uuid.uuid4().hex
-        options = [utils.YES, utils.NO]
+        options = utils.OPTIONS_YES_NO
         title = '🛡️ __**Are you in a company?**__'
 
         return await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
@@ -140,7 +139,7 @@ def user_id_exists(data, user_id):
 async def greet_new_player(bot, user):
     try:
         custom_id = uuid.uuid4().hex
-        options = [utils.YES, utils.NO]
+        options = utils.OPTIONS_YES_NO
         title = "Hello! 👋 You have indicated that you might be attending war/invasion." \
                 "\n\n**Please complete the following questions to be considered in our roster.** " + \
                 "\n\n⚠ __**Have you uploaded info via Wardens War Bot before?**__" + \
@@ -154,7 +153,7 @@ async def greet_new_player(bot, user):
 async def ask_for_update(bot, user, data):
     try:
         custom_id = uuid.uuid4().hex
-        options = [utils.YES, utils.NO]
+        options = utils.OPTIONS_YES_NO
 
         player_info_msg = ''
         if len(data) == 10:
@@ -170,7 +169,7 @@ async def ask_for_update(bot, user, data):
 async def is_warden_prompt(bot, user):
     try:
         custom_id = uuid.uuid4().hex
-        options = [utils.YES, utils.NO]
+        options = utils.OPTIONS_YES_NO
         title = '⚔ __**Are you a Warden?**__'
 
         return await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
@@ -181,7 +180,7 @@ async def is_warden_prompt(bot, user):
 async def get_warden_company(bot, user):
     try:
         custom_id = uuid.uuid4().hex
-        options = utils.WARDEN_COMPANIES
+        options = utils.OPTIONS_WARDEN_COMPANIES
         title = '⚔ __**Which Warden company are you in?**__'
 
         return await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
