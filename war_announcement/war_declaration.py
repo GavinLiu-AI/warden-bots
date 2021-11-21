@@ -83,7 +83,7 @@ async def start(ctx, bot):
 
 
 def get_announcement_message(zone, offense, time, date, custom_msg):
-    message = '\n' + utils.WAR_SIGNUP_LABEL_MESSAGE + \
+    message = '\n@everyone\n' + utils.WAR_SIGNUP_LABEL_MESSAGE + \
               "{0} {1} at {2} PST on {3}!**".format(zone, offense, time, date) + \
               custom_msg + \
               "\n\nClick on one of the reactions to let us know your availability. " \
