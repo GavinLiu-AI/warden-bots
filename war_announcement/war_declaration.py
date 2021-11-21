@@ -41,8 +41,7 @@ async def select_date(ctx, bot):
 
 async def select_time(ctx, bot):
     custom_id = uuid.uuid4().hex
-    options = ['4PM', '4:30PM', '5PM', '5:30PM', '6PM', '6:30PM', '7PM', '7:30PM', '8PM', '8:30PM', '9PM', '9:30PM',
-               '10PM', '10:30PM', '11PM']
+    options = utils.OPTIONS_TIME
     title = '⚔ __**Select Start Time (PST)**__'
 
     return await utils.get_interaction(bot=bot, user=ctx, custom_id=custom_id, options=options, title=title)

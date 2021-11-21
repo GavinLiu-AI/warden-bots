@@ -46,6 +46,8 @@ OPTIONS_WAR = ['Offense', 'Defense', 'Invasion']
 OPTIONS_ROLES = ['🛡️ Tank', '🗡️ Melee DPS', '🏹 Range DPS', '🧙 Mage', '💚 Healer']
 OPTIONS_WEAPONS = ['Bow', 'Fire Staff', 'Great Axe', 'Hatchet', 'Ice Gauntlet', 'Life Staff', 'Musket', 'Rapier',
                    'Spear', 'Sword and Shield', 'Void Gauntlet', 'War Hammer']
+OPTIONS_TIME = ['4PM', '4:30PM', '5PM', '5:30PM', '6PM', '6:30PM', '7PM', '7:30PM', '8PM', '8:30PM', '9PM', '9:30PM',
+               '10PM', '10:30PM', '11PM']
 
 
 WAR_SIGNUP_LABEL_MESSAGE = '**War/Invasion Sign up: '
