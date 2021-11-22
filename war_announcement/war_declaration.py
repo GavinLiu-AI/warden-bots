@@ -90,6 +90,9 @@ def get_announcement_message(cmd_prefix, zone, offense, time, date, custom_msg):
 
 def get_war_content(message, reaction):
     message = message.split(' ')
+    war_format = ''
+    zone = ''
+    date = ''
     for i, j in enumerate(message):
         if 'Location:' in j:
             zone = message[i + 1]
@@ -97,6 +100,12 @@ def get_war_content(message, reaction):
         elif 'Date:' in j:
             date = message[i + 1]
 
-    attend = 'Yes' if reaction == utils.YES_EMOJI else 'Maybe'
+    attend = ''
+    if reaction == utils.YES_EMOJI:
+        attend = 'Yes'
+    elif reaction == utils.MAYBE_EMOJI:
+        attend = 'Maybe'
+    else:
+        attend = 'No'
 
     return [war_format, zone, date, attend]

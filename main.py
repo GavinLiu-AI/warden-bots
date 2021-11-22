@@ -1,6 +1,7 @@
 from discord_components import ComponentsBot
 
 import configs
+import spreadsheet
 import utils
 from survey import role_selection
 from war_announcement import war_declaration
@@ -32,16 +33,17 @@ async def on_raw_reaction_add(payload):
 
         emoji_name = payload.emoji.name
         # War signup
+        war_content = war_declaration.get_war_content(message.content, emoji_name)
         if utils.WAR_SIGNUP_LABEL_MESSAGE in message.content:
+            user = await bot.fetch_user(user_id=payload.user_id)
             await utils.remove_other_reactions(bot, payload=payload, message=message, emoji_name=emoji_name)
             # War selection
             if emoji_name == utils.YES_EMOJI or emoji_name == utils.MAYBE_EMOJI:
-                war_content = war_declaration.get_war_content(message.content, emoji_name)
-                user = await bot.fetch_user(user_id=payload.user_id)
                 await role_selection.send_dm(bot, user, war_content=war_content)
             else:
-                return
-
+                all_data = spreadsheet.read(_range=utils.TAB_DATA)
+                player_data = all_data[spreadsheet.find_user_row(_range=utils.TAB_DATA, user_id=user.id)] + war_content
+                spreadsheet.upload_war_signup(data=player_data)
     except:
         await utils.log_in_channel(bot, "Error during on_raw_reaction_add")
 
