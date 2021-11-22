@@ -218,14 +218,14 @@ async def start_survey(bot, user, player_exist):
 
 async def send_dm(bot, user, war_content=None):
     try:
-        all_data = spreadsheet.read(tab=utils.TAB_DATA)
+        all_data = spreadsheet.read(_range=utils.TAB_DATA)
         player_exist = user_id_exists(all_data, user.id)
 
         if not player_exist:
             await user.send(utils.DM_SURVEY_INTRO_MESSAGE)
             player_data = await start_survey(bot, user, player_exist=False)
         else:
-            player_data = all_data[spreadsheet.find_user_row(user.id)]
+            player_data = all_data[spreadsheet.find_user_row(_range=utils.TAB_DATA, user_id=user.id)]
             update_intend = await ask_for_update(bot, user, data=player_data)
             if update_intend == utils.YES:
                 player_data = await start_survey(bot, user, player_exist=True)

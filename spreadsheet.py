@@ -13,39 +13,37 @@ def get_spreadsheet():
     return service.spreadsheets()
 
 
-def read(tab):
+def read(_range):
     sheet = get_spreadsheet()
-    result = sheet.values().get(spreadsheetId=utils.SPREADSHEET_ID, range=tab).execute()
+    result = sheet.values().get(spreadsheetId=utils.SPREADSHEET_ID, range=_range).execute()
     return result.get('values')[1::]
 
 
-def append_to_sheet(tab, data):
+def append_to_sheet(_range, data):
     sheet = get_spreadsheet()
     request = sheet.values().append(
         spreadsheetId=utils.SPREADSHEET_ID,
         valueInputOption='USER_ENTERED',
-        range=tab,
+        range=_range,
         body={'values': data})
     request.execute()
 
 
-def update_data(data, range):
+def update_data(data, _range):
     sheet = get_spreadsheet()
     request = sheet.values().update(
         spreadsheetId=utils.SPREADSHEET_ID,
         valueInputOption='USER_ENTERED',
-        range=range,
+        range=_range,
         body={'values': data})
     request.execute()
 
 
-def find_user_row(user_id, data=None):
-    if not data:
-        data = read(tab=utils.TAB_DATA)
+def find_user_row(_range, user_id):
+    data = read(_range)
     ids = [int(row[0]) for row in data]
     for row, id in enumerate(ids):
-        if id == user_id:
-            # Account for 0-index and sheet header
+        if id == int(user_id):
             return row
     return 1000
 
@@ -54,14 +52,25 @@ def upload_data(data, update=False):
     new_data = [data]
 
     if update:
-        row = find_user_row(int(data[0])) + 2
-        if row != 0:
-            update_data(new_data, range='data!A{0}'.format(row))
+        sheet_row = find_user_row(_range=utils.TAB_DATA, user_id=int(data[0])) + 2
+        if sheet_row != 0:
+            update_data(new_data, _range=utils.TAB_DATA + '!A{0}'.format(sheet_row))
 
     else:
-        append_to_sheet(utils.TAB_DATA, new_data)
+        append_to_sheet(_range=utils.TAB_DATA, data=new_data)
 
 
 def upload_war_signup(data):
     new_data = [data]
+
+    # Check if player exist in war signup
+    all_data = read(_range=utils.TAB_WARSIGNUP)
+    index_id = 0
+    index_date = -2
+    index_zone = -3
+    for i, j in enumerate(all_data):
+        if j[index_id] == data[index_id] and j[index_date] == data[index_date] and j[index_zone] == data[index_zone]:
+            update_data(data=new_data, _range=utils.TAB_WARSIGNUP + '!A{0}'.format(i + 2))
+            return
+
     append_to_sheet(utils.TAB_WARSIGNUP, new_data)
