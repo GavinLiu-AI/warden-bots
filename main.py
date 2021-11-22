@@ -1,13 +1,13 @@
 from discord_components import ComponentsBot
-from sys import exit
+
 import configs
 import utils
 from survey import role_selection
 from war_announcement import war_declaration
 
-bot = ComponentsBot(',')
+bot = ComponentsBot('/')
 awake = True
-
+cmd_prefix = bot.command_prefix
 
 @bot.event
 async def on_ready():
@@ -20,6 +20,9 @@ async def on_raw_reaction_add(payload):
         return
 
     try:
+        if cmd_prefix != '.' and payload.user_id != utils.X_ID:
+            return
+
         # Skip if bot added emoji
         if payload.user_id == bot.user.id:
             return
@@ -33,8 +36,9 @@ async def on_raw_reaction_add(payload):
             await utils.remove_other_reactions(bot, payload=payload, message=message, emoji_name=emoji_name)
             # War selection
             if emoji_name == utils.YES_EMOJI or emoji_name == utils.MAYBE_EMOJI:
+                war_content = war_declaration.get_war_content(message.content, emoji_name)
                 user = await bot.fetch_user(user_id=payload.user_id)
-                await role_selection.send_dm(bot, user)
+                await role_selection.send_dm(bot, user, war_content=war_content)
             else:
                 return
 
@@ -50,7 +54,7 @@ async def update(ctx):
 
     try:
         user = await bot.fetch_user(user_id=ctx.author.id)
-        await role_selection.send_dm(bot, user)
+        await role_selection.send_dm(bot, user, war_content=None)
     except:
         await ctx.send('Error during war declaration')
 
@@ -73,9 +77,11 @@ async def declare(ctx, *args):
                 custom_msg = '\n\n' + ' '.join(args)
 
             emojis = [utils.YES_EMOJI, utils.MAYBE_EMOJI, utils.NO_EMOJI]
-            message = war_declaration.get_announcement_message(zone=zone, offense=offense, time=time, date=date,
-                                                               custom_msg=custom_msg)
-            channel = bot.get_channel(utils.WAR_SIGNUP_CHANNEL_ID)
+            message = war_declaration.get_announcement_message(cmd_prefix=cmd_prefix, zone=zone, offense=offense,
+                                                               time=time, date=date, custom_msg=custom_msg)
+
+            channel = bot.get_channel(utils.WAR_SIGNUP_CHANNEL_ID) if cmd_prefix == '.' \
+                else bot.get_channel(utils.BOT_COMMANDS_CHANNEL_ID)
             await war_declaration.announce(ctx, channel, message, offense, emojis)
     except:
         await ctx.send('Error during war declaration')

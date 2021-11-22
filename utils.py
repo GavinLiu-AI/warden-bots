@@ -1,6 +1,6 @@
 from discord_components import Select, SelectOption
-import datetime
-import spreadsheet
+
+# Files
 
 GOOGLE_KEY = 'google-key.json'
 # GOOGLE_KEY = '/home/chrisliuengr/wardens-bots/google-key.json'
@@ -10,9 +10,14 @@ IMAGE_WAR = 'images/war.jpg'
 IMAGE_INVASION = 'images/invasion.jpg'
 # IMAGE_INVASION = '/home/chrisliuengr/wardens-bots/images/invasion.jpg'
 
+
+# Google Spreadsheet
 SPREADSHEET_ID = '1U9mfxT-v2KzFd6y57_lAR7CCl0wiBT29UwV4dDLqxqc'
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+TAB_DATA = 'data'
+TAB_WARSIGNUP = 'warsignup'
 
+# Discord
 X_ID = 120341906818334721
 
 ANNOUNCEMENTS_CHANNEL_ID = 870222133115117568
@@ -22,6 +27,7 @@ WAR_SIGNUP_CHANNEL_ID = 911441115197083719
 
 ADMIN_ROLES = ['Moderator', 'War-Lead', 'Master Warden', 'Grand Master Warden', 'Squad Lead', 'Wardens of the Hunt']
 
+# Selections
 YES = 'Yes'
 NO = 'No'
 
@@ -40,16 +46,16 @@ OPTIONS_UPDATES = [OPTION_UPDATE_IGN, OPTION_UPDATE_COMP, OPTION_UPDATE_ROLE, OP
 
 OPTIONS_WARDEN_COMPANIES = ['Wardens of the Hunt', 'Wardens Rising']
 
-OPTIONS_ZONES = ['Brightwood', 'Cutlass Keys', 'Ebonscale Reach', 'Everfall', 'First Light', 'Monarch\'s Bluffs',
-               'Mourningdale', 'Reekwater', 'Restless Shore', 'Weaver\'s Fen', 'Windsward']
+OPTIONS_ZONES = ['Brightwood', 'Cutlass Keys', 'Ebonscale_Reach', 'Everfall', 'First_Light', 'Monarch\'s_Bluffs',
+                 'Mourningdale', 'Reekwater', 'Restless_Shore', 'Weaver\'s_Fen', 'Windsward']
 OPTIONS_WAR = ['Offense', 'Defense', 'Invasion']
 OPTIONS_ROLES = ['🛡️ Tank', '🗡️ Melee DPS', '🏹 Range DPS', '🧙 Mage', '💚 Healer']
 OPTIONS_WEAPONS = ['Bow', 'Fire Staff', 'Great Axe', 'Hatchet', 'Ice Gauntlet', 'Life Staff', 'Musket', 'Rapier',
                    'Spear', 'Sword and Shield', 'Void Gauntlet', 'War Hammer']
 OPTIONS_TIME = ['4PM', '4:30PM', '5PM', '5:30PM', '6PM', '6:30PM', '7PM', '7:30PM', '8PM', '8:30PM', '9PM', '9:30PM',
-               '10PM', '10:30PM', '11PM']
+                '10PM', '10:30PM', '11PM']
 
-
+# Messages
 WAR_SIGNUP_LABEL_MESSAGE = '**War/Invasion Sign up: '
 DM_SURVEY_INTRO_MESSAGE = 'Hello! 👋 You have indicated that you might be attending war/invasion.' \
                           '\n\n**Please complete the following questions to be considered in our roster.**' \
@@ -133,27 +139,3 @@ async def get_interaction(bot, user, custom_id, options, title):
     await send_interation_message(interaction)
 
     return interaction.values[0]
-
-
-def find_user_row(user_id):
-    data = spreadsheet.read()
-    ids = [int(row[0]) for row in data]
-    for row, id in enumerate(ids):
-        if id == user_id:
-            # Account for 0-index and sheet header
-            return row + 2
-    return 0
-
-
-async def upload_data(user, ign, is_warden, company, role, weapon_1, weapon_2, gear_score, update=False):
-    date = str(datetime.datetime.today().date())
-    new_data = [[str(user.id), str(user), ign, is_warden, company, role, weapon_1, weapon_2, gear_score, date]]
-
-    if update:
-        row = find_user_row(user.id)
-        if row != 0:
-            spreadsheet.update(new_data, range='data!A{0}'.format(row))
-        else:
-            await user.send('Cannot find user in database')
-    else:
-        spreadsheet.append(new_data)

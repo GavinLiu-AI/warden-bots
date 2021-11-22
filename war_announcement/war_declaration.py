@@ -22,18 +22,12 @@ async def select_offense(ctx, bot):
     return await utils.get_interaction(bot=bot, user=ctx, custom_id=custom_id, options=options, title=title)
 
 
-def get_month_day(date):
-    _, month, day = date.split('-')
-    return month + '/' + day
-
-
 async def select_date(ctx, bot):
     custom_id = uuid.uuid4().hex
     today = datetime.datetime.today().date()
-    dates = [str(today),
-             str(today + datetime.timedelta(days=1)),
-             str(today + datetime.timedelta(days=2))]
-    options = [get_month_day(date) for date in dates]
+    options = [str(today),
+               str(today + datetime.timedelta(days=1)),
+               str(today + datetime.timedelta(days=2))]
     title = '⚔ __**Select Date**__'
 
     return await utils.get_interaction(bot=bot, user=ctx, custom_id=custom_id, options=options, title=title)
@@ -81,13 +75,28 @@ async def start(ctx, bot):
         await ctx.send('Error during war declaration')
 
 
-def get_announcement_message(zone, offense, time, date, custom_msg):
-    message = '\n@everyone\n' + utils.WAR_SIGNUP_LABEL_MESSAGE + \
-              "{0} {1} at {2} PST on {3}!**".format(zone, offense, time, date) + \
-              custom_msg + \
+def get_announcement_message(cmd_prefix, zone, offense, time, date, custom_msg):
+    message = '\n@everyone ' if cmd_prefix == '.' else ''
+    message = message + \
+              utils.WAR_SIGNUP_LABEL_MESSAGE + \
+              "\n\nLocation: {0} {1} \nTime: {2} PST\nDate: {3} **".format(zone, offense, time, date) + custom_msg + \
               "\n\nClick on one of the reactions to let us know your availability. " \
               "\n_(Please complete the survey if you receive one from Wardens War Bot. " \
               "If the survey expires type .update in channel to add/edit your loadout)_" \
-              "\n{0}: Attending {1}: Tentative {2}: Not Attending"\
-                  .format(utils.YES_EMOJI, utils.MAYBE_EMOJI, utils.NO_EMOJI)
+              "\n{0}: Attending {1}: Tentative {2}: Not Attending".format(utils.YES_EMOJI, utils.MAYBE_EMOJI,
+                                                                          utils.NO_EMOJI)
     return message
+
+
+def get_war_content(message, reaction):
+    message = message.split(' ')
+    for i, j in enumerate(message):
+        if 'Location:' in j:
+            zone = message[i + 1]
+            war_format = message[i + 2]
+        elif 'Date:' in j:
+            date = message[i + 1]
+
+    attend = 'Yes' if reaction == utils.YES_EMOJI else 'Maybe'
+
+    return [war_format, zone, date, attend]

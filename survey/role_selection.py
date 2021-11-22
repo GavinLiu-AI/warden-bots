@@ -1,6 +1,7 @@
 import uuid
-import utils
+
 import spreadsheet
+import utils
 
 
 async def get_ign_confirm(bot, user):
@@ -51,8 +52,7 @@ async def get_weapon(bot, user, string):
 
 async def ask_gear_score(bot, user):
     try:
-        q = await user.send('⚠ __**What is your Gear Score (integer, 0-600)?**__'
-                            '\n_If you are not sure, make your best guess._')
+        q = await user.send('⚠ __**What is your Gear Score (integer, 0-600)?**__')
 
         reply = await bot.wait_for(
             "message",
@@ -155,10 +155,8 @@ async def ask_for_update(bot, user, data):
         custom_id = uuid.uuid4().hex
         options = utils.OPTIONS_YES_NO
 
-        player_info_msg = ''
-        if len(data) == 10:
-            player_info_msg = '\n\nYou are {0} of {1}, a {2} using {3} and {4}, your gear score is {5}.' \
-                .format(data[2], data[4], data[5], data[6], data[7], data[8])
+        player_info_msg = '\n\nYou are {0} of {1}, a {2} using {3} and {4}, your gear score is {5}.' \
+            .format(data[2], data[4], data[5], data[6], data[7], data[8])
         title = utils.DM_SURVEY_RETURNING_PLAYER_MESSAGE + player_info_msg + utils.DM_SURVEY_UPDATE_PROMPT
 
         return await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
@@ -201,7 +199,7 @@ async def get_company_prompts(bot, user):
     return company, is_warden
 
 
-async def start_survey(bot, user, old_player):
+async def start_survey(bot, user, player_exist):
     ign = await get_ign(bot, user)
 
     company, is_warden = await get_company_prompts(bot, user)
@@ -209,26 +207,32 @@ async def start_survey(bot, user, old_player):
     weapon_1, weapon_2 = await get_weapons(bot, user)
     gear_score = await get_gear_score(bot, user)
 
-    if not old_player:
-        await utils.upload_data(user=user, ign=ign, is_warden=is_warden, company=company, role=role, weapon_1=weapon_1,
-                                weapon_2=weapon_2, gear_score=gear_score)
+    data = [str(user.id), str(user), ign, is_warden, company, role, weapon_1, weapon_2, gear_score]
+    if not player_exist:
+        spreadsheet.upload_data(data=data)
     else:
-        await utils.upload_data(user=user, ign=ign, is_warden=is_warden, company=company, role=role, weapon_1=weapon_1,
-                                weapon_2=weapon_2, gear_score=gear_score, update=True)
+        spreadsheet.upload_data(data=data, update=True)
+
+    return data
 
 
-async def send_dm(bot, user):
+async def send_dm(bot, user, war_content=None):
     try:
-        data = spreadsheet.read()
-        old_player = user_id_exists(data, user.id)
+        all_data = spreadsheet.read(tab=utils.TAB_DATA)
+        player_exist = user_id_exists(all_data, user.id)
 
-        if not old_player:
+        if not player_exist:
             await user.send(utils.DM_SURVEY_INTRO_MESSAGE)
-            await start_survey(bot, user, old_player=False)
+            player_data = await start_survey(bot, user, player_exist=False)
         else:
-            update_intend = await ask_for_update(bot, user, data[utils.find_user_row(user.id) - 2])
+            player_data = all_data[spreadsheet.find_user_row(user.id)]
+            update_intend = await ask_for_update(bot, user, data=player_data)
             if update_intend == utils.YES:
-                await start_survey(bot, user, old_player=True)
+                player_data = await start_survey(bot, user, player_exist=True)
+
+        if war_content:
+            player_data = player_data + war_content
+            spreadsheet.upload_war_signup(data=player_data)
 
         await user.send("Thank you for completing the survey, make sure to sign up at the war board in game. 😊")
 
