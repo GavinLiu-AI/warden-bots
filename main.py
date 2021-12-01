@@ -1,14 +1,16 @@
 from discord_components import ComponentsBot
-
 import configs
 import spreadsheet
 import utils
-from survey import role_selection
-from war_announcement import war_declaration
+import role_selection
+import war_declaration
+import poll as pll
 
+# TODO: change command prefix
 bot = ComponentsBot('/')
 awake = True
 cmd_prefix = bot.command_prefix
+
 
 @bot.event
 async def on_ready():
@@ -30,22 +32,45 @@ async def on_raw_reaction_add(payload):
 
         # Skip if message/dm wasn't posted by bot
         message = await bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
-
+        user = await bot.fetch_user(user_id=payload.user_id)
         emoji_name = payload.emoji.name
         # War signup
-        war_content = war_declaration.get_war_content(message.content, emoji_name)
-        if utils.WAR_SIGNUP_LABEL_MESSAGE in message.content:
-            user = await bot.fetch_user(user_id=payload.user_id)
+        if utils.WAR_SIGNUP_LABEL in message.content:
+            war_content = war_declaration.get_war_content(message.content, emoji_name)
+
             await utils.remove_other_reactions(bot, payload=payload, message=message, emoji_name=emoji_name)
             # War selection
             if emoji_name == utils.YES_EMOJI or emoji_name == utils.MAYBE_EMOJI:
                 await role_selection.send_dm(bot, user, war_content=war_content)
             else:
-                all_data = spreadsheet.read(_range=utils.TAB_DATA)
-                player_data = all_data[spreadsheet.find_user_row(_range=utils.TAB_DATA, user_id=user.id)] + war_content
+                all_data = spreadsheet.read_sheet(sheet_id=utils.SPREADSHEET_WAR_ID, _range=utils.TAB_DATA)
+                player_data = all_data[spreadsheet.get_user_index(_range=utils.TAB_DATA, user_id=user.id)] + war_content
                 spreadsheet.upload_war_signup(data=player_data)
-    except:
-        await utils.log_in_channel(bot, "Error during on_raw_reaction_add")
+
+        # Game Poll
+        elif utils.message_in_embeds(message=utils.GAME_POLL_LABEL, embeds=message.embeds):
+            await pll.dm_game(bot, user)
+    except Exception as e:
+        await utils.log_in_channel(bot, e)
+
+
+@bot.command(brief='Start and stop poll',
+             description='.poll game to start game poll. .poll game done to end poll')
+async def poll(ctx, *args):
+    try:
+        if not awake:
+            return
+
+        if not await utils.is_admin(ctx):
+            return
+
+        args = ' '.join(args)
+        if args == 'game':
+            await pll.init_game_poll(ctx, bot)
+        elif args == 'game done':
+            await pll.end_game_poll(ctx, bot)
+    except Exception as e:
+        await ctx.send(e)
 
 
 @bot.command(brief='Update player information and loadout',
@@ -54,11 +79,11 @@ async def update(ctx):
     if not awake:
         return
 
+    user = await bot.fetch_user(user_id=ctx.author.id)
     try:
-        user = await bot.fetch_user(user_id=ctx.author.id)
         await role_selection.send_dm(bot, user, war_content=None)
-    except:
-        await ctx.send('Error during war declaration')
+    except Exception as e:
+        await ctx.send('{0}: {1}'.format(user, e))
 
 
 @bot.command(brief='(Admin) Declare war and make war announcements',
@@ -85,8 +110,8 @@ async def declare(ctx, *args):
             channel = bot.get_channel(utils.WAR_SIGNUP_CHANNEL_ID) if cmd_prefix == '.' \
                 else bot.get_channel(utils.BOT_COMMANDS_CHANNEL_ID)
             await war_declaration.announce(ctx, channel, message, offense, emojis)
-    except:
-        await ctx.send('Error during war declaration')
+    except Exception as e:
+        await ctx.send(e)
 
 
 @bot.command(brief='(Dev) Feature testing',
@@ -118,8 +143,8 @@ async def channel_id(ctx, channel_name=None):
             await ctx.send(channel_id)
         else:
             await ctx.send('Channel ID not found.')
-    except:
-        await ctx.send('Error fetching channel id')
+    except Exception as e:
+        await ctx.send(e)
 
 
 @bot.command(brief='Get bot status',
@@ -130,8 +155,8 @@ async def status(ctx):
             await ctx.send(utils.get_online_msg(bot))
         else:
             await ctx.send(utils.get_deactivation_msg(bot))
-    except:
-        await ctx.send('Error checking bot status')
+    except Exception as e:
+        await ctx.send(e)
 
 
 @bot.command(brief='(Admin) Deactivate bot',
@@ -144,8 +169,8 @@ async def deactivate(ctx):
         await ctx.send(utils.get_deactivation_msg(bot))
         global awake
         awake = False
-    except:
-        await ctx.send('Error during deactivation')
+    except Exception as e:
+        await ctx.send(e)
 
 
 @bot.command(brief='(Admin) Activate bot',
@@ -158,8 +183,8 @@ async def activate(ctx):
         await ctx.send(utils.get_online_msg(bot))
         global awake
         awake = True
-    except:
-        await ctx.send('Error during activation')
+    except Exception as e:
+        await ctx.send(e)
 
 
 bot.run(configs.WAR_BOT_TOKEN)

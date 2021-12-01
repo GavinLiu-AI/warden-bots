@@ -1,5 +1,4 @@
 import uuid
-
 import spreadsheet
 import utils
 
@@ -10,7 +9,7 @@ async def get_ign_confirm(bot, user):
 
         reply = await bot.wait_for(
             "message",
-            timeout=300,
+            timeout=600,
             check=lambda m: m.author == user and m.channel.id == q.channel.id)
         ign = reply.content.strip()
 
@@ -23,8 +22,8 @@ async def get_ign_confirm(bot, user):
         title = '❔ __**Confirm your IGN as {0}?**__'.format(ign)
 
         return ign, await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
-    except:
-        await utils.log_in_channel(bot, "Error during IGN prompt with {0}".format(user.name))
+    except Exception as e:
+        await utils.log_in_channel(bot, utils.format_error_msg(user, e))
 
 
 async def get_role(bot, user):
@@ -35,8 +34,8 @@ async def get_role(bot, user):
 
         role = await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
         return role.split(' ', 1)[1]
-    except:
-        await utils.log_in_channel(bot, "Error during IGN prompt with {0}".format(user.name))
+    except Exception as e:
+        await utils.log_in_channel(bot, utils.format_error_msg(user, e))
 
 
 async def get_weapon(bot, user, string):
@@ -46,8 +45,8 @@ async def get_weapon(bot, user, string):
         title = '🗡️ __**What is your ' + string + ' weapon?**__'
 
         return await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
-    except:
-        await utils.log_in_channel(bot, "Error during IGN prompt with {0}".format(user.name))
+    except Exception as e:
+        await utils.log_in_channel(bot, utils.format_error_msg(user, e))
 
 
 async def ask_gear_score(bot, user):
@@ -56,7 +55,7 @@ async def ask_gear_score(bot, user):
 
         reply = await bot.wait_for(
             "message",
-            timeout=300,
+            timeout=600,
             check=lambda m: m.author == user and m.channel.id == q.channel.id)
         gs = reply.content
 
@@ -70,8 +69,8 @@ async def ask_gear_score(bot, user):
             return 0
 
         return gs
-    except:
-        await utils.log_in_channel(bot, "Error during IGN prompt with {0}".format(user.name))
+    except Exception as e:
+        await utils.log_in_channel(bot, utils.format_error_msg(user, e))
 
 
 async def get_weapons(bot, user):
@@ -110,11 +109,11 @@ async def get_company(bot, user):
 
         reply = await bot.wait_for(
             "message",
-            timeout=300,
+            timeout=600,
             check=lambda m: m.author == user and m.channel.id == q.channel.id)
         return reply.content.strip()
-    except:
-        await utils.log_in_channel(bot, "Error during IGN prompt with {0}".format(user.name))
+    except Exception as e:
+        await utils.log_in_channel(bot, utils.format_error_msg(user, e))
 
 
 async def get_in_company(bot, user):
@@ -124,8 +123,8 @@ async def get_in_company(bot, user):
         title = '🛡️ __**Are you in a company?**__'
 
         return await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
-    except:
-        await utils.log_in_channel(bot, "Error during IGN prompt with {0}".format(user.name))
+    except Exception as e:
+        await utils.log_in_channel(bot, utils.format_error_msg(user, e))
 
 
 def user_id_exists(data, user_id):
@@ -146,8 +145,13 @@ async def greet_new_player(bot, user):
                 '\n(Select *No* if it is your first time interacting with this bot or if you are unsure.)'
 
         return await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
-    except:
-        await utils.log_in_channel(bot, "Error during DM init with {0}".format(user.name))
+    except Exception as e:
+        await utils.log_in_channel(bot, utils.format_error_msg(user, e))
+
+
+def get_player_info(data):
+    return '\n\nYou are {0} of {1}, a {2} using {3} and {4}, your gear score is {5}.' \
+            .format(data[2], data[4], data[5], data[6], data[7], data[8])
 
 
 async def ask_for_update(bot, user, data):
@@ -155,13 +159,12 @@ async def ask_for_update(bot, user, data):
         custom_id = uuid.uuid4().hex
         options = utils.OPTIONS_YES_NO
 
-        player_info_msg = '\n\nYou are {0} of {1}, a {2} using {3} and {4}, your gear score is {5}.' \
-            .format(data[2], data[4], data[5], data[6], data[7], data[8])
+        player_info_msg = get_player_info(data)
         title = utils.DM_SURVEY_RETURNING_PLAYER_MESSAGE + player_info_msg + utils.DM_SURVEY_UPDATE_PROMPT
 
         return await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
-    except:
-        await utils.log_in_channel(bot, "Error during DM init with {0}".format(user.name))
+    except Exception as e:
+        await utils.log_in_channel(bot, utils.format_error_msg(user, e))
 
 
 async def is_warden_prompt(bot, user):
@@ -171,8 +174,8 @@ async def is_warden_prompt(bot, user):
         title = '⚔ __**Are you a Warden?**__'
 
         return await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
-    except:
-        await utils.log_in_channel(bot, "Error during IGN prompt with {0}".format(user.name))
+    except Exception as e:
+        await utils.log_in_channel(bot, utils.format_error_msg(user, e))
 
 
 async def get_warden_company(bot, user):
@@ -182,8 +185,8 @@ async def get_warden_company(bot, user):
         title = '⚔ __**Which Warden company are you in?**__'
 
         return await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
-    except:
-        await utils.log_in_channel(bot, "Error during IGN prompt with {0}".format(user.name))
+    except Exception as e:
+        await utils.log_in_channel(bot, utils.format_error_msg(user, e))
 
 
 async def get_company_prompts(bot, user):
@@ -201,7 +204,6 @@ async def get_company_prompts(bot, user):
 
 async def start_survey(bot, user, player_exist):
     ign = await get_ign(bot, user)
-
     company, is_warden = await get_company_prompts(bot, user)
     role = await get_role(bot, user)
     weapon_1, weapon_2 = await get_weapons(bot, user)
@@ -209,32 +211,77 @@ async def start_survey(bot, user, player_exist):
 
     data = [str(user.id), str(user), ign, is_warden, company, role, weapon_1, weapon_2, gear_score]
     if not player_exist:
-        spreadsheet.upload_data(data=data)
+        spreadsheet.upload_war_data(data=data)
     else:
-        spreadsheet.upload_data(data=data, update=True)
+        spreadsheet.upload_war_data(data=data, update=True)
 
     return data
 
 
+async def update_player_data(bot, user, player_data):
+    try:
+        custom_id = uuid.uuid4().hex
+        options = utils.OPTIONS_UPDATES
+        title = get_player_info(player_data) + '\n\n__**Would you like to update your info?**__ ' \
+                                               '*(Select Done if everything is up-to-date)*'
+
+        choice = await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
+
+        ign = player_data[2]
+        is_warden = player_data[3]
+        company = player_data[4]
+        role = player_data[5]
+        weapon_1 = player_data[6]
+        weapon_2 = player_data[7]
+        gear_score = player_data[8]
+
+        if choice == utils.OPTION_UPDATE_IGN:
+            ign = await get_ign(bot, user)
+        elif choice == utils.OPTION_UPDATE_COMP:
+            company, is_warden = await get_company_prompts(bot, user)
+        elif choice == utils.OPTION_UPDATE_ROLE:
+            role = await get_role(bot, user)
+        elif choice == utils.OPTION_UPDATE_WEAPON:
+            weapon_1, weapon_2 = await get_weapons(bot, user)
+        elif choice == utils.OPTION_UPDATE_GS:
+            gear_score = await get_gear_score(bot, user)
+        elif choice == utils.OPTION_DONE:
+            return player_data, True
+
+        new_data = [str(user.id), str(user), ign, is_warden, company, role, weapon_1, weapon_2, gear_score]
+        spreadsheet.upload_war_data(data=new_data, update=True)
+
+        return new_data, False
+    except Exception as e:
+        await user.send(e)
+
+
 async def send_dm(bot, user, war_content=None):
     try:
-        all_data = spreadsheet.read(_range=utils.TAB_DATA)
+        all_data = spreadsheet.read_sheet(sheet_id=utils.SPREADSHEET_WAR_ID, _range=utils.TAB_DATA)
         player_exist = user_id_exists(all_data, user.id)
 
         if not player_exist:
             await user.send(utils.DM_SURVEY_INTRO_MESSAGE)
             player_data = await start_survey(bot, user, player_exist=False)
+
+            if war_content:
+                spreadsheet.upload_war_signup(data=player_data + war_content)
         else:
-            player_data = all_data[spreadsheet.find_user_row(_range=utils.TAB_DATA, user_id=user.id)]
-            update_intend = await ask_for_update(bot, user, data=player_data)
-            if update_intend == utils.YES:
-                player_data = await start_survey(bot, user, player_exist=True)
+            player_data = all_data[spreadsheet.get_user_index(_range=utils.TAB_DATA, user_id=user.id)]
+            if war_content:
+                spreadsheet.upload_war_signup(data=player_data+war_content)
+
+            finished = False
+            while not finished:
+                new_data, finished = await update_player_data(bot, user, player_data)
+                if war_content:
+                    spreadsheet.upload_war_signup(data=new_data + war_content)
 
         if war_content:
-            player_data = player_data + war_content
-            spreadsheet.upload_war_signup(data=player_data)
+            await user.send("Thank you for completing the survey, make sure to sign up at the war board in game. 😊")
+        else:
+            await user.send("Thank you for completing the survey! 😊")
 
-        await user.send("Thank you for completing the survey, make sure to sign up at the war board in game. 😊")
-
-    except:
-        await utils.log_in_channel(bot, "Error during DM with {0}".format(user.name))
+    except Exception as e:
+        await utils.log_in_channel(bot, utils.format_error_msg(user, e))

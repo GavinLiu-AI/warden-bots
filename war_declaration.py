@@ -1,8 +1,6 @@
 import datetime
 import uuid
-
 import discord
-
 import utils
 
 
@@ -24,7 +22,7 @@ async def select_offense(ctx, bot):
 
 async def select_date(ctx, bot):
     custom_id = uuid.uuid4().hex
-    today = datetime.datetime.today().date()
+    today = utils.get_today_date()
     options = [str(today),
                str(today + datetime.timedelta(days=1)),
                str(today + datetime.timedelta(days=2))]
@@ -50,8 +48,8 @@ async def announce(ctx, channel, message, offense, emojis):
 
         msg = await channel.send(message, file=discord.File(image_path))
         await utils.add_emojis(msg, emojis)
-    except:
-        await ctx.send('Error during war announcement')
+    except Exception as e:
+        await ctx.send(e)
 
 
 async def confirm_war(ctx, bot, zone, offense, time, date):
@@ -71,14 +69,14 @@ async def start(ctx, bot):
         confirm = await confirm_war(ctx, bot, zone=zone, offense=offense, time=time, date=date)
 
         return zone, offense, date, time, confirm
-    except:
-        await ctx.send('Error during war declaration')
+    except Exception as e:
+        await ctx.send(e)
 
 
 def get_announcement_message(cmd_prefix, zone, offense, time, date, custom_msg):
     message = '\n@everyone ' if cmd_prefix == '.' else ''
     message = message + \
-              utils.WAR_SIGNUP_LABEL_MESSAGE + \
+              utils.WAR_SIGNUP_LABEL + \
               "\n\nLocation: {0} {1} \nTime: {2} PST\nDate: {3} **".format(zone, offense, time, date) + custom_msg + \
               "\n\nClick on one of the reactions to let us know your availability. " \
               "\n_(Please complete the survey if you receive one from Wardens War Bot. " \
@@ -100,7 +98,6 @@ def get_war_content(message, reaction):
         elif 'Date:' in j:
             date = message[i + 1]
 
-    attend = ''
     if reaction == utils.YES_EMOJI:
         attend = 'Yes'
     elif reaction == utils.MAYBE_EMOJI:
