@@ -5,62 +5,82 @@ import utils
 
 
 async def select_zone(ctx, bot):
-    custom_id = uuid.uuid4().hex
     options = utils.OPTIONS_ZONES
-    title = '**Please fill out information for war announcements**\n\n⚔ __**Select Zone**__'
+    title = 'Select Zone'
 
-    return await utils.get_interaction(bot=bot, user=ctx, custom_id=custom_id, options=options, title=title)
+    embed = discord.Embed(title=title,
+                          colour=discord.Colour.gold())
+    await ctx.send(embed=embed)
+
+    return await utils.get_interaction(bot=bot, ctx=ctx, options=options)
 
 
 async def select_offense(ctx, bot):
-    custom_id = uuid.uuid4().hex
     options = utils.OPTIONS_WAR
-    title = '⚔ __**Select Offense/Defence/Invasion**__'
+    title = 'Select Offense/Defence/Invasion'
 
-    return await utils.get_interaction(bot=bot, user=ctx, custom_id=custom_id, options=options, title=title)
+    embed = discord.Embed(title=title,
+                          colour=discord.Colour.gold())
+    await ctx.send(embed=embed)
+
+    return await utils.get_interaction(bot=bot, ctx=ctx, options=options)
 
 
 async def select_date(ctx, bot):
-    custom_id = uuid.uuid4().hex
     today = utils.get_today_date()
     options = [str(today),
                str(today + datetime.timedelta(days=1)),
                str(today + datetime.timedelta(days=2))]
-    title = '⚔ __**Select Date**__'
+    title = 'Select Date'
 
-    return await utils.get_interaction(bot=bot, user=ctx, custom_id=custom_id, options=options, title=title)
+    embed = discord.Embed(title=title,
+                          colour=discord.Colour.gold())
+    await ctx.send(embed=embed)
+
+    return await utils.get_interaction(bot=bot, ctx=ctx, options=options)
 
 
 async def select_time(ctx, bot):
-    custom_id = uuid.uuid4().hex
     options = utils.OPTIONS_TIME
-    title = '⚔ __**Select Start Time (PST)**__'
+    title = 'Select Start Time (PST)'
 
-    return await utils.get_interaction(bot=bot, user=ctx, custom_id=custom_id, options=options, title=title)
+    embed = discord.Embed(title=title,
+                          colour=discord.Colour.gold())
+    await ctx.send(embed=embed)
+
+    return await utils.get_interaction(bot=bot, ctx=ctx, options=options)
 
 
-async def announce(ctx, channel, message, offense, emojis):
+async def announce(ctx, bot, cmd_prefix, zone, offense, date, time):
     try:
-        if offense == 'Invasion':
-            image_path = utils.IMAGE_INVASION
-        else:
-            image_path = utils.IMAGE_WAR
-
-        msg = await channel.send(message, file=discord.File(image_path))
-        await utils.add_emojis(msg, emojis)
+        emojis = [utils.YES_EMOJI]
+        everyone = '@everyone' if cmd_prefix == '.' else ''
+        channel = bot.get_channel(utils.WAR_SIGNUP_CHANNEL_ID) if cmd_prefix == '.' \
+            else bot.get_channel(utils.BOT_COMMANDS_CHANNEL_ID)
+        title = f'{zone} {offense} ({utils.get_weekday(date)} {time}, {date})'
+        description = utils.WAR_SIGNUP_DESCRIPTION
+        embed = discord.Embed(title=title,
+                              description=description,
+                              colour=discord.Colour.gold())
+        embed.set_image(url=ctx.message.attachments[0].url)
+        message = await channel.send(content=everyone, embed=embed)
+        await utils.add_emojis(msg=message, emojis=emojis)
     except Exception as e:
         await ctx.send(e)
 
 
 async def confirm_war(ctx, bot, zone, offense, time, date):
-    custom_id = uuid.uuid4().hex
     options = utils.OPTIONS_YES_NO
-    title = '⚔ __**Confirm war announcement: {0} {1} at {2} PST on {3}**__'.format(zone, offense, time, date)
+    title = f'Please Confirm: \n{zone} {offense} ({utils.get_weekday(date)} {time}, {date})'
 
-    return await utils.get_interaction(bot=bot, user=ctx, custom_id=custom_id, options=options, title=title)
+    embed = discord.Embed(title=title,
+                          colour=discord.Colour.gold())
+    await ctx.send(embed=embed)
+
+    return await utils.get_interaction(bot=bot, ctx=ctx, options=options)
 
 
-async def start(ctx, bot):
+async def start_selection(ctx, bot, cmd_prefix):
     try:
         zone = await select_zone(ctx, bot)
         offense = await select_offense(ctx, bot)
@@ -68,41 +88,30 @@ async def start(ctx, bot):
         time = await select_time(ctx, bot)
         confirm = await confirm_war(ctx, bot, zone=zone, offense=offense, time=time, date=date)
 
-        return zone, offense, date, time, confirm
+        if confirm == utils.YES:
+            await announce(ctx=ctx, bot=bot, cmd_prefix=cmd_prefix, zone=zone, offense=offense, date=date, time=time)
     except Exception as e:
         await ctx.send(e)
 
 
-def get_announcement_message(cmd_prefix, zone, offense, time, date, custom_msg):
-    message = '\n@everyone ' if cmd_prefix == '.' else ''
-    message = message + \
-              utils.WAR_SIGNUP_LABEL + \
-              "\n\nLocation: {0} {1} \nTime: {2} PST\nDate: {3} **".format(zone, offense, time, date) + custom_msg + \
-              "\n\nClick on one of the reactions to let us know your availability. " \
-              "\n_(Please complete the survey if you receive one from Wardens War Bot. " \
-              "If the survey expires type .update in channel to add/edit your loadout)_" \
-              "\n{0}: Attending {1}: Tentative {2}: Not Attending".format(utils.YES_EMOJI, utils.MAYBE_EMOJI,
-                                                                          utils.NO_EMOJI)
-    return message
-
-
-def get_war_content(message, reaction):
+def get_war_content(message):
+    # 'zone offense (weekday, time, date)'
+    message = message.replace('(', '')
+    char = [',', '(', ')']
+    for c in char:
+        message = message.replace(c, '')
     message = message.split(' ')
-    war_format = ''
-    zone = ''
-    date = ''
-    for i, j in enumerate(message):
-        if 'Location:' in j:
-            zone = message[i + 1]
-            war_format = message[i + 2]
-        elif 'Date:' in j:
-            date = message[i + 1]
 
-    if reaction == utils.YES_EMOJI:
-        attend = 'Yes'
-    elif reaction == utils.MAYBE_EMOJI:
-        attend = 'Maybe'
-    else:
-        attend = 'No'
+    index_offense = 0
+    offenses = utils.OPTIONS_WAR
+    for offense in offenses:
+        if offense in message:
+            index_offense = message.index(offense)
+            break
 
-    return [war_format, zone, date, attend]
+    zone = ' '.join(message[:index_offense])
+    offense = message[index_offense]
+    # time = message[index_offense+2]
+    date = message[index_offense+3]
+
+    return [offense, zone, date]

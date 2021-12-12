@@ -1,57 +1,45 @@
 import uuid
 import spreadsheet
 import utils
-
-
-async def get_ign_confirm(bot, user):
-    try:
-        q = await user.send('❕ __**What is your In Game Name?**__')
-
-        reply = await bot.wait_for(
-            "message",
-            timeout=600,
-            check=lambda m: m.author == user and m.channel.id == q.channel.id)
-        ign = reply.content.strip()
-
-        if not ign:
-            await user.send('_Invalid Name._')
-            return ign, utils.NO
-
-        custom_id = uuid.uuid4().hex
-        options = utils.OPTIONS_YES_NO
-        title = '❔ __**Confirm your IGN as {0}?**__'.format(ign)
-
-        return ign, await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
-    except Exception as e:
-        await utils.log_in_channel(bot, utils.format_error_msg(user, e))
+import discord
 
 
 async def get_role(bot, user):
     try:
-        custom_id = uuid.uuid4().hex
         options = utils.OPTIONS_ROLES
-        title = '⚔ __**What is your in game role?**__'
+        title = 'What is your role?'
+        embed = discord.Embed(title=title,
+                              colour=discord.Colour.gold())
+        await user.send(embed=embed)
 
-        role = await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
+        role = await utils.get_interaction(bot=bot, ctx=user, options=options)
         return role.split(' ', 1)[1]
     except Exception as e:
-        await utils.log_in_channel(bot, utils.format_error_msg(user, e))
+        await utils.log_in_channel(bot, utils.error_msg(user, e))
 
 
-async def get_weapon(bot, user, string):
+async def get_weapon(bot, user, string, weapon_1=None):
     try:
-        custom_id = uuid.uuid4().hex
-        options = utils.OPTIONS_WEAPONS
-        title = '🗡️ __**What is your ' + string + ' weapon?**__'
+        if weapon_1:
+            options = sorted(set(utils.OPTIONS_WEAPONS) - {[weapon_1]})
+        else:
+            options = sorted(utils.OPTIONS_WEAPONS)
+        title = 'What is your ' + string + ' weapon?'
+        embed = discord.Embed(title=title,
+                              colour=discord.Colour.gold())
+        await user.send(embed=embed)
 
-        return await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
+        return await utils.get_interaction(bot=bot, ctx=user, options=options)
     except Exception as e:
-        await utils.log_in_channel(bot, utils.format_error_msg(user, e))
+        await utils.log_in_channel(bot, utils.error_msg(user, e))
 
 
 async def ask_gear_score(bot, user):
     try:
-        q = await user.send('⚠ __**What is your Gear Score (integer, 0-600)?**__')
+        title = 'What is your Gear Score? (integer, 0-600)'
+        embed = discord.Embed(title=title,
+                              colour=discord.Colour.gold())
+        q = await user.send(embed=embed)
 
         reply = await bot.wait_for(
             "message",
@@ -60,39 +48,40 @@ async def ask_gear_score(bot, user):
         gs = reply.content
 
         if not gs.isdigit():
-            await user.send('Invalid Number.')
+            await user.send('Not a integer, try again')
             return 0
 
         gs = int(gs)
         if gs <= 0 or gs > 600:
-            await user.send('Invalid Range, 0-600 only.')
+            await user.send('Invalid Range, 0-600 only. Try again')
             return 0
 
         return gs
     except Exception as e:
-        await utils.log_in_channel(bot, utils.format_error_msg(user, e))
+        await utils.log_in_channel(bot, utils.error_msg(user, e))
 
 
 async def get_weapons(bot, user):
-    weapon_1 = await get_weapon(bot, user, 'primary')
-    weapon_2 = await get_weapon(bot, user, 'secondary')
-
-    if weapon_1 == weapon_2:
-        await user.send('Both weapons cannot be the same, try again')
-        weapon_1 = await get_weapon(bot, user, 'primary')
-        weapon_2 = await get_weapon(bot, user, 'secondary')
+    weapon_1 = await get_weapon(bot=bot, user=user, string='primary')
+    weapon_2 = await get_weapon(bot=bot, user=user, string='secondary', weapon_1=weapon_1)
 
     return weapon_1, weapon_2
 
 
 async def get_ign(bot, user):
-    ign, confirmed = await get_ign_confirm(bot, user)
-    while not ign:
-        ign, confirmed = await get_ign_confirm(bot, user)
-    while confirmed != utils.YES:
-        ign, confirmed = await get_ign_confirm(bot, user)
+    try:
+        title = 'What is your in game name?'
+        embed = discord.Embed(title=title,
+                              colour=discord.Colour.gold())
+        q = await user.send(embed=embed)
 
-    return ign
+        reply = await bot.wait_for(
+            "message",
+            timeout=600,
+            check=lambda m: m.author == user and m.channel.id == q.channel.id)
+        return reply.content.strip()
+    except Exception as e:
+        await utils.log_in_channel(bot, utils.error_msg(user, e))
 
 
 async def get_gear_score(bot, user):
@@ -105,7 +94,12 @@ async def get_gear_score(bot, user):
 
 async def get_company(bot, user):
     try:
-        q = await user.send('🛡️ __**What is your company name?**__')
+        title = 'What is your company name?'
+        description = '*Type **None** if you are not in a company*'
+        embed = discord.Embed(title=title,
+                              description=description,
+                              colour=discord.Colour.gold())
+        q = await user.send(embed=embed)
 
         reply = await bot.wait_for(
             "message",
@@ -113,18 +107,7 @@ async def get_company(bot, user):
             check=lambda m: m.author == user and m.channel.id == q.channel.id)
         return reply.content.strip()
     except Exception as e:
-        await utils.log_in_channel(bot, utils.format_error_msg(user, e))
-
-
-async def get_in_company(bot, user):
-    try:
-        custom_id = uuid.uuid4().hex
-        options = utils.OPTIONS_YES_NO
-        title = '🛡️ __**Are you in a company?**__'
-
-        return await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
-    except Exception as e:
-        await utils.log_in_channel(bot, utils.format_error_msg(user, e))
+        await utils.log_in_channel(bot, utils.error_msg(user, e))
 
 
 def user_id_exists(data, user_id):
@@ -135,74 +118,41 @@ def user_id_exists(data, user_id):
     return False
 
 
-async def greet_new_player(bot, user):
-    try:
-        custom_id = uuid.uuid4().hex
-        options = utils.OPTIONS_YES_NO
-        title = "Hello! 👋 You have indicated that you might be attending war/invasion." \
-                "\n\n**Please complete the following questions to be considered in our roster.** " + \
-                "\n\n⚠ __**Have you uploaded info via Wardens War Bot before?**__" + \
-                '\n(Select *No* if it is your first time interacting with this bot or if you are unsure.)'
-
-        return await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
-    except Exception as e:
-        await utils.log_in_channel(bot, utils.format_error_msg(user, e))
-
-
 def get_player_info(data):
-    return '\n\nYou are {0} of {1}, a {2} using {3} and {4}, your gear score is {5}.' \
-            .format(data[2], data[4], data[5], data[6], data[7], data[8])
-
-
-async def ask_for_update(bot, user, data):
-    try:
-        custom_id = uuid.uuid4().hex
-        options = utils.OPTIONS_YES_NO
-
-        player_info_msg = get_player_info(data)
-        title = utils.DM_SURVEY_RETURNING_PLAYER_MESSAGE + player_info_msg + utils.DM_SURVEY_UPDATE_PROMPT
-
-        return await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
-    except Exception as e:
-        await utils.log_in_channel(bot, utils.format_error_msg(user, e))
+    return f'**Name**: {data[2]}\n\n**Company**: {data[4]}\n\n**Role**: {data[5]}\n\n**Primary Weapon**: {data[6]}' \
+           f'\n\n**Secondary Weapon**: {data[7]}\n\n**Gear Score**: {data[8]}'
 
 
 async def is_warden_prompt(bot, user):
     try:
-        custom_id = uuid.uuid4().hex
         options = utils.OPTIONS_YES_NO
-        title = '⚔ __**Are you a Warden?**__'
+        title = 'Are you a Warden?'
+        embed = discord.Embed(title=title,
+                              colour=discord.Colour.gold())
+        await user.send(embed=embed)
 
-        return await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
+        return await utils.get_interaction(bot=bot, ctx=user, options=options)
     except Exception as e:
-        await utils.log_in_channel(bot, utils.format_error_msg(user, e))
-
-
-async def get_warden_company(bot, user):
-    try:
-        custom_id = uuid.uuid4().hex
-        options = utils.OPTIONS_WARDEN_COMPANIES
-        title = '⚔ __**Which Warden company are you in?**__'
-
-        return await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
-    except Exception as e:
-        await utils.log_in_channel(bot, utils.format_error_msg(user, e))
+        await utils.log_in_channel(bot, utils.error_msg(user, e))
 
 
 async def get_company_prompts(bot, user):
-    company = 'None'
     is_warden = await is_warden_prompt(bot, user)
     if is_warden == utils.YES:
-        company = await get_warden_company(bot, user)
+        return 'Wardens', is_warden
     else:
-        in_company = await get_in_company(bot, user)
-        if in_company == utils.YES:
-            company = await get_company(bot, user)
+        company = await get_company(bot, user)
 
     return company, is_warden
 
 
-async def start_survey(bot, user, player_exist):
+async def start_survey(bot, user):
+    # Send intro message
+    embed = discord.Embed(title=utils.DM_SURVEY_INTRO_TITLE,
+                          description=utils.DM_SURVEY_INTRO_DESCRIPTION,
+                          colour=discord.Colour.gold())
+    await user.send(embed=embed)
+
     ign = await get_ign(bot, user)
     company, is_warden = await get_company_prompts(bot, user)
     role = await get_role(bot, user)
@@ -210,22 +160,23 @@ async def start_survey(bot, user, player_exist):
     gear_score = await get_gear_score(bot, user)
 
     data = [str(user.id), str(user), ign, is_warden, company, role, weapon_1, weapon_2, gear_score]
-    if not player_exist:
-        spreadsheet.upload_war_data(data=data)
-    else:
-        spreadsheet.upload_war_data(data=data, update=True)
+    spreadsheet.upload_war_data(data=data)
 
     return data
 
 
 async def update_player_data(bot, user, player_data):
     try:
-        custom_id = uuid.uuid4().hex
         options = utils.OPTIONS_UPDATES
-        title = get_player_info(player_data) + '\n\n__**Would you like to update your info?**__ ' \
-                                               '*(Select Done if everything is up-to-date)*'
 
-        choice = await utils.get_interaction(bot=bot, user=user, custom_id=custom_id, options=options, title=title)
+        title = 'Would you like to update your data?'
+        description = get_player_info(player_data) + '\n\n*Select **Done** if everything is up-to-date*'
+        embed = discord.Embed(title=title,
+                              description=description,
+                              colour=discord.Colour.gold())
+        await user.send(embed=embed)
+
+        choice = await utils.get_interaction(bot=bot, ctx=user, options=options)
 
         ign = player_data[2]
         is_warden = player_data[3]
@@ -262,26 +213,30 @@ async def send_dm(bot, user, war_content=None):
         player_exist = user_id_exists(all_data, user.id)
 
         if not player_exist:
-            await user.send(utils.DM_SURVEY_INTRO_MESSAGE)
-            player_data = await start_survey(bot, user, player_exist=False)
+            player_data = await start_survey(bot, user)
 
             if war_content:
                 spreadsheet.upload_war_signup(data=player_data + war_content)
         else:
             player_data = all_data[spreadsheet.get_user_index(_range=utils.TAB_DATA, user_id=user.id)]
             if war_content:
-                spreadsheet.upload_war_signup(data=player_data+war_content)
+                spreadsheet.upload_war_signup(data=player_data + war_content)
 
             finished = False
             while not finished:
-                new_data, finished = await update_player_data(bot, user, player_data)
+                player_data, finished = await update_player_data(bot, user, player_data)
                 if war_content:
-                    spreadsheet.upload_war_signup(data=new_data + war_content)
+                    spreadsheet.upload_war_signup(data=player_data + war_content)
 
+        description = 'Your data has been uploaded.'
         if war_content:
-            await user.send("Thank you for completing the survey, make sure to sign up at the war board in game. 😊")
-        else:
-            await user.send("Thank you for completing the survey! 😊")
+            description += '\n*Make sure to sign up at the war board in game.*'
+
+        title = 'Thank you for completing the survey! 😎'
+        embed = discord.Embed(title=title,
+                              description=description,
+                              colour=discord.Colour.gold())
+        await user.send(embed=embed)
 
     except Exception as e:
-        await utils.log_in_channel(bot, utils.format_error_msg(user, e))
+        await utils.log_in_channel(bot, utils.error_msg(user, e))

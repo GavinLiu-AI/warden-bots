@@ -1,9 +1,9 @@
 from discord_components import Select, SelectOption
 import datetime
 from pytz import timezone
+import uuid
 
 # Files
-
 GOOGLE_KEY = 'google-key.json'
 # GOOGLE_KEY = '/home/chrisliuengr/wardens-bots/google-key.json'
 
@@ -21,6 +21,7 @@ TAB_WARSIGNUP = 'warsignup'
 
 SPREADSHEET_GAME_POLL_ID = '1gUou0_yJqARkcsXPsXAfEk7ahghlDOZyjQyFfHF931M'
 TAB_GAMES = 'games'
+TAB_PARTICIPANTS = 'participants'
 
 # Discord
 X_ID = 120341906818334721
@@ -50,14 +51,14 @@ OPTION_UPDATE_COMP = 'Company'
 OPTION_UPDATE_ROLE = 'Role'
 OPTION_UPDATE_WEAPON = 'Weapons'
 OPTION_UPDATE_GS = 'Gear Score'
-OPTION_DONE = 'Done'
-OPTIONS_UPDATES = [OPTION_UPDATE_IGN, OPTION_UPDATE_COMP, OPTION_UPDATE_ROLE, OPTION_UPDATE_WEAPON, OPTION_UPDATE_GS,
-                   OPTION_DONE]
+OPTION_DONE = '✅ Done'
+OPTIONS_UPDATES = [OPTION_DONE, OPTION_UPDATE_IGN, OPTION_UPDATE_COMP, OPTION_UPDATE_ROLE, OPTION_UPDATE_WEAPON,
+                   OPTION_UPDATE_GS]
 
 OPTIONS_WARDEN_COMPANIES = ['Wardens of the Hunt', 'Wardens Rising']
 
-OPTIONS_ZONES = ['Brightwood', 'Cutlass Keys', 'Ebonscale_Reach', 'Everfall', 'First_Light', 'Monarch\'s_Bluffs',
-                 'Mourningdale', 'Reekwater', 'Restless_Shore', 'Weaver\'s_Fen', 'Windsward']
+OPTIONS_ZONES = ['Brightwood', 'Cutlass Keys', 'Ebonscale Reach', 'Everfall', 'First Light', 'Monarch\'s Bluffs',
+                 'Mourningdale', 'Reekwater', 'Restless Shore', 'Weaver\'s Fen', 'Windsward']
 OPTIONS_WAR = ['Offense', 'Defense', 'Invasion']
 OPTIONS_ROLES = ['🛡️ Tank', '🗡️ Melee DPS', '🏹 Range DPS', '🧙 Mage', '💚 Healer']
 OPTIONS_WEAPONS = ['Bow', 'Fire Staff', 'Great Axe', 'Hatchet', 'Ice Gauntlet', 'Life Staff', 'Musket', 'Rapier',
@@ -66,38 +67,20 @@ OPTIONS_TIME = ['4PM', '4:30PM', '5PM', '5:30PM', '6PM', '6:30PM', '7PM', '7:30P
                 '10PM', '10:30PM', '11PM']
 
 # Labels
-WAR_SIGNUP_LABEL = '**War/Invasion Sign up: '
+WAR_SIGNUP_DESCRIPTION = f'*Please click on {YES_EMOJI} if you wish to participate.*'
 GAME_POLL_LABEL = 'Game Poll'
 
 # Messages
-DM_SURVEY_INTRO_MESSAGE = 'Hello! 👋 You have indicated that you might be attending war/invasion.' \
-                          '\n\n**Please complete the following questions to be considered in our roster.**' \
-                          '\n_(It will expire after 10 minutes)_'
-DM_SURVEY_RETURNING_PLAYER_MESSAGE = 'We have your information in the database!'
-DM_SURVEY_UPDATE_PROMPT = '\n\n__**Would you like to update anything today?**__'
+DM_SURVEY_INTRO_TITLE = 'Welcome to Wardens!'
+DM_SURVEY_INTRO_DESCRIPTION = 'We do not have your data in our database. ' \
+                              '\nPlease tell us more about you before we can place you in our roster.'
+DM_SURVEY_RETURNING_PLAYER_MESSAGE = 'Welcome back!'
+DM_SURVEY_UPDATE_PROMPT = '*Would you like to update your data?*'
 GAME_POLL_MESSAGE = 'What other games besides New World would you be interested in playing with us this week?' \
                     '\nLet us know and we will play the most voted game together at a scheduled time.'
 
-
-async def send_interation_message(interaction):
-    await interaction.send(content=f"{interaction.values[0]} selected")
-
-
-async def set_selections(ctx, title, options, custom_id, placeholder=''):
-    await ctx.send(
-        title,
-        components=[
-            Select(
-                placeholder=placeholder,
-                options=[SelectOption(label=option, value=option) for option in options],
-                custom_id=custom_id,
-            )
-        ],
-    )
-
-
-async def wait_for_input(bot, custom_id, timeout=600):
-    return await bot.wait_for("select_option", check=lambda inter: inter.custom_id == custom_id, timeout=timeout)
+# Error Messages
+ERROR_MISSING_IMAGE = 'Missing war image, please attach an in game screenshot'
 
 
 async def log_in_channel(bot, message, channel_id=BOT_COMMANDS_CHANNEL_ID):
@@ -141,17 +124,26 @@ async def remove_other_reactions(bot, payload, message, emoji_name):
 
 
 def get_online_msg(bot):
-    return '{0} is online'.format(bot.user.name)
+    return f'{bot.ctx.name} is online'
 
 
 def get_deactivation_msg(bot):
-    return '{0} is online but deactivated. Type ".activate" command for activation.'.format(bot.user.name)
+    return f'{bot.ctx.name} is online but deactivated. Type ".activate" command for activation.'
 
 
-async def get_interaction(bot, user, custom_id, options, title):
-    await set_selections(user, title=title, options=options, custom_id=custom_id)
-    interaction = await wait_for_input(bot, custom_id)
-    await send_interation_message(interaction)
+async def get_interaction(bot, ctx, options, title='_ _'):
+    custom_id = uuid.uuid4().hex
+    await ctx.send(
+        title,
+        components=[
+            Select(
+                options=[SelectOption(label=option, value=option) for option in options],
+                custom_id=custom_id,
+            )
+        ],
+    )
+    interaction = await bot.wait_for("select_option", check=lambda inter: inter.custom_id == custom_id, timeout=600)
+    await interaction.send(content=f"{interaction.values[0]} selected")
 
     return interaction.values[0]
 
@@ -160,8 +152,8 @@ def get_today_date():
     return datetime.datetime.now(timezone('US/Pacific')).date()
 
 
-def format_error_msg(user, e):
-    return '{0}: {1}'.format(user, e)
+def error_msg(user, e):
+    return f'{user}: {e}'
 
 
 def message_in_embeds(message, embeds):
@@ -174,3 +166,28 @@ def message_in_embeds(message, embeds):
             return True
 
     return False
+
+
+def description_in_embeds(description, embeds):
+    if not embeds:
+        return False
+
+    for embed in embeds:
+        if description in embed.description:
+            return True
+
+    return False
+
+
+def get_embed_title(embeds):
+    if not embeds:
+        return ''
+
+    return embeds[0].title
+
+
+def get_weekday(date):
+    try:
+        return datetime.datetime.strptime(date, '%Y-%m-%d').strftime('%A')
+    except:
+        return ''

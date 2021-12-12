@@ -35,12 +35,11 @@ async def on_raw_reaction_add(payload):
         user = await bot.fetch_user(user_id=payload.user_id)
         emoji_name = payload.emoji.name
         # War signup
-        if utils.WAR_SIGNUP_LABEL in message.content:
-            war_content = war_declaration.get_war_content(message.content, emoji_name)
+        if utils.description_in_embeds(description=utils.WAR_SIGNUP_DESCRIPTION, embeds=message.embeds):
+            war_content = war_declaration.get_war_content(utils.get_embed_title(embeds=message.embeds))
 
-            await utils.remove_other_reactions(bot, payload=payload, message=message, emoji_name=emoji_name)
             # War selection
-            if emoji_name == utils.YES_EMOJI or emoji_name == utils.MAYBE_EMOJI:
+            if emoji_name == utils.YES_EMOJI:
                 await role_selection.send_dm(bot, user, war_content=war_content)
             else:
                 all_data = spreadsheet.read_sheet(sheet_id=utils.SPREADSHEET_WAR_ID, _range=utils.TAB_DATA)
@@ -83,33 +82,24 @@ async def update(ctx):
     try:
         await role_selection.send_dm(bot, user, war_content=None)
     except Exception as e:
-        await ctx.send('{0}: {1}'.format(user, e))
+        await ctx.send(f'{user}: {e}')
 
 
 @bot.command(brief='(Admin) Declare war and make war announcements',
              description='(Admin) Declare war and make war announcements')
-async def declare(ctx, *args):
+async def declare(ctx):
     if not awake:
         return
 
     if not await utils.is_admin(ctx):
         return
 
+    if not ctx.message.attachments:
+        await ctx.send(utils.ERROR_MISSING_IMAGE)
+        return
+
     try:
-        zone, offense, date, time, confirm = await war_declaration.start(ctx, bot)
-
-        if confirm == utils.YES:
-            custom_msg = ''
-            if args:
-                custom_msg = '\n\n' + ' '.join(args)
-
-            emojis = [utils.YES_EMOJI, utils.MAYBE_EMOJI, utils.NO_EMOJI]
-            message = war_declaration.get_announcement_message(cmd_prefix=cmd_prefix, zone=zone, offense=offense,
-                                                               time=time, date=date, custom_msg=custom_msg)
-
-            channel = bot.get_channel(utils.WAR_SIGNUP_CHANNEL_ID) if cmd_prefix == '.' \
-                else bot.get_channel(utils.BOT_COMMANDS_CHANNEL_ID)
-            await war_declaration.announce(ctx, channel, message, offense, emojis)
+        await war_declaration.start_selection(ctx, bot, cmd_prefix)
     except Exception as e:
         await ctx.send(e)
 

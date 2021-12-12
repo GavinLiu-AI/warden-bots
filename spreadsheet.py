@@ -55,7 +55,7 @@ def upload_war_data(data, update=False):
         sheet_row = get_user_index(_range=utils.TAB_DATA, user_id=int(data[0])) + 2
         if sheet_row != 0:
             update_sheet_data(sheet_id=utils.SPREADSHEET_WAR_ID, data=new_data,
-                              _range=utils.TAB_DATA + '!A{0}'.format(sheet_row))
+                              _range=utils.TAB_DATA + f'!A{sheet_row}')
 
     else:
         append_to_sheet(sheet_id=utils.SPREADSHEET_WAR_ID, _range=utils.TAB_DATA, data=new_data)
@@ -72,7 +72,7 @@ def upload_war_signup(data):
     for i, j in enumerate(all_data):
         if j[index_id] == data[index_id] and j[index_date] == data[index_date] and j[index_zone] == data[index_zone]:
             update_sheet_data(sheet_id=utils.SPREADSHEET_WAR_ID, data=new_data,
-                              _range=utils.TAB_WARSIGNUP + '!A{0}'.format(i + 2))
+                              _range=utils.TAB_WARSIGNUP + f'!A{i + 2}')
             return
 
     append_to_sheet(sheet_id=utils.SPREADSHEET_WAR_ID, _range=utils.TAB_WARSIGNUP, data=new_data)
@@ -91,3 +91,6 @@ def clear_game_poll():
     new_data = [[d[0], 1] for d in data]
     update_sheet_data(sheet_id=utils.SPREADSHEET_GAME_POLL_ID, data=new_data,
                       _range=utils.TAB_GAMES + '!A2')
+
+    get_spreadsheet().values().clear(spreadsheetId=utils.SPREADSHEET_GAME_POLL_ID,
+                                     range=utils.TAB_PARTICIPANTS + '!A2:1000').execute()
