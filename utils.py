@@ -7,11 +7,6 @@ import uuid
 GOOGLE_KEY = 'google-key.json'
 # GOOGLE_KEY = '/home/chrisliuengr/wardens-bots/google-key.json'
 
-IMAGE_WAR = 'images/war.jpg'
-# IMAGE_WAR = '/home/chrisliuengr/wardens-bots/images/war.jpg'
-IMAGE_INVASION = 'images/invasion.jpg'
-# IMAGE_INVASION = '/home/chrisliuengr/wardens-bots/images/invasion.jpg'
-
 
 # Google Spreadsheet
 SPREADSHEET_WAR_ID = '1Pq5NkCikB5f1dXmWlLQ8nXYiZZTFcrEJggy7OJ3DkoQ'
@@ -124,11 +119,11 @@ async def remove_other_reactions(bot, payload, message, emoji_name):
 
 
 def get_online_msg(bot):
-    return f'{bot.ctx.name} is online'
+    return f'{bot.user.name} is online'
 
 
 def get_deactivation_msg(bot):
-    return f'{bot.ctx.name} is online but deactivated. Type ".activate" command for activation.'
+    return f'{bot.user.name} is online but deactivated. Type ".activate" command for activation.'
 
 
 async def get_interaction(bot, ctx, options, title='_ _'):
