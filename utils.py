@@ -7,7 +7,6 @@ import uuid
 GOOGLE_KEY = 'google-key.json'
 # GOOGLE_KEY = '/home/chrisliuengr/wardens-bots/google-key.json'
 
-
 # Google Spreadsheet
 SPREADSHEET_WAR_ID = '1Pq5NkCikB5f1dXmWlLQ8nXYiZZTFcrEJggy7OJ3DkoQ'
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
@@ -27,7 +26,7 @@ GENERAL_CHANNEL_ID = 870297428899803246
 WAR_SIGNUP_CHANNEL_ID = 911441115197083719
 EVENT_CHANNEL_ID = 891540447166595102
 
-ADMIN_ROLES = ['Moderator', 'War-Lead', 'Master Warden', 'Grand Master Warden', 'Squad Lead', 'Wardens of the Hunt']
+ADMIN_ROLES = ['Leadership', 'Governor', 'Administrator']
 
 # Selections
 YES = 'Yes'

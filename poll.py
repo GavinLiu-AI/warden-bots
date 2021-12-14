@@ -112,17 +112,6 @@ async def vote_games(bot, user):
 
 async def dm_game(bot, user):
     try:
-        data = spreadsheet.read_sheet(sheet_id=utils.SPREADSHEET_GAME_POLL_ID, _range=utils.TAB_PARTICIPANTS)
-        if not data:
-            title = 'Poll has ended'
-            description = 'The next poll will be announced in the **Event Channel**, stay tuned!'
-            embed = discord.Embed(title=title,
-                                  description=description,
-                                  colour=discord.Colour.gold())
-            await user.send(embed=embed)
-            return
-
-
         participants = spreadsheet.read_sheet(utils.SPREADSHEET_GAME_POLL_ID, utils.TAB_PARTICIPANTS)
         participants = [p[0] for p in participants]
         if str(user.id) in participants:
