@@ -21,7 +21,7 @@ async def get_role(bot, user):
 async def get_weapon(bot, user, string, weapon_1=None):
     try:
         if weapon_1:
-            options = sorted(set(utils.OPTIONS_WEAPONS) - {[weapon_1]})
+            options = sorted(set(utils.OPTIONS_WEAPONS) - set([weapon_1]))
         else:
             options = sorted(utils.OPTIONS_WEAPONS)
         title = 'What is your ' + string + ' weapon?'
