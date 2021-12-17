@@ -16,7 +16,7 @@ cmd_prefix = bot.command_prefix
 current_war = None
 
 
-@tasks.loop(seconds=5)
+@tasks.loop(seconds=10)
 async def war_channel_monitor():
     global current_war
 
@@ -39,7 +39,7 @@ async def war_channel_monitor():
         await utils.log_in_channel(bot, e)
 
 
-@tasks.loop(seconds=5)
+@tasks.loop(seconds=10)
 async def dm_war_perf():
     try:
         # TODO: change
