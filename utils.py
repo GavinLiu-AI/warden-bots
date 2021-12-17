@@ -6,16 +6,16 @@ import uuid
 # Files
 GOOGLE_KEY = 'google-key.json'
 # GOOGLE_KEY = '/home/chrisliuengr/wardens-bots/google-key.json'
+IMAGE_PERF = 'images/perf.jpg'
+# IMAGE_PERF = '/home/chrisliuengr/wardens-bots/images/perf.jpg'
+SCREENSHOTS_DIR = 'screenshots'
+# SCREENSHOTS_DIR = '/home/chrisliuengr/wardens-bots/screenshots'
 
-# Google Spreadsheet
-SPREADSHEET_WAR_ID = '1Pq5NkCikB5f1dXmWlLQ8nXYiZZTFcrEJggy7OJ3DkoQ'
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-TAB_DATA = 'data'
-TAB_WARSIGNUP = 'warsignup'
+# Images
+PERF_IMAGE_URL = 'https://i.imgur.com/yL6xRTx.jpeg'
 
-SPREADSHEET_GAME_POLL_ID = '1gUou0_yJqARkcsXPsXAfEk7ahghlDOZyjQyFfHF931M'
-TAB_GAMES = 'games'
-TAB_PARTICIPANTS = 'participants'
+# Datetime format
+DATETIME_FORMAT = '%Y-%m-%d %I:%M %p'
 
 # Discord
 X_ID = 120341906818334721
@@ -25,6 +25,7 @@ BOT_COMMANDS_CHANNEL_ID = 909256529788682302
 GENERAL_CHANNEL_ID = 870297428899803246
 WAR_SIGNUP_CHANNEL_ID = 911441115197083719
 EVENT_CHANNEL_ID = 891540447166595102
+WAR_GENERAL_CHANNEL_ID = 896957973841186856
 
 ADMIN_ROLES = ['Leadership', 'Governor', 'Administrator']
 
@@ -51,23 +52,26 @@ OPTIONS_UPDATES = [OPTION_DONE, OPTION_UPDATE_IGN, OPTION_UPDATE_COMP, OPTION_UP
 
 OPTIONS_WARDEN_COMPANIES = ['Wardens of the Hunt', 'Wardens Rising']
 
-OPTIONS_ZONES = ['Brightwood', 'Cutlass Keys', 'Ebonscale Reach', 'Everfall', 'First Light', 'Monarch\'s Bluffs',
-                 'Mourningdale', 'Reekwater', 'Restless Shore', 'Weaver\'s Fen', 'Windsward']
+OPTIONS_ZONES = ['Brightwood', 'Cutlass Keys', 'Ebonscale Reach', 'Everfall', 'First Light', 'Monarchs Bluffs',
+                 'Mourningdale', 'Reekwater', 'Restless Shore', 'Weavers Fen', 'Windsward']
 OPTIONS_WAR = ['Offense', 'Defense', 'Invasion']
 OPTIONS_ROLES = ['🛡️ Tank', '🗡️ Melee DPS', '🏹 Range DPS', '🧙 Mage', '💚 Healer']
 OPTIONS_WEAPONS = ['Bow', 'Fire Staff', 'Great Axe', 'Hatchet', 'Ice Gauntlet', 'Life Staff', 'Musket', 'Rapier',
                    'Spear', 'Sword and Shield', 'Void Gauntlet', 'War Hammer']
-OPTIONS_TIME = ['4PM', '4:30PM', '5PM', '5:30PM', '6PM', '6:30PM', '7PM', '7:30PM', '8PM', '8:30PM', '9PM', '9:30PM',
-                '10PM', '10:30PM', '11PM']
+OPTIONS_TIME = ['4:00 PM', '4:30 PM', '5:00 PM', '5:30 PM', '6:00 PM', '6:30 PM', '7:00 PM', '7:30 PM', '8:00 PM',
+                '8:30 PM', '9:00 PM', '9:30 PM', '10:00 PM', '10:30 PM', '11:00 PM']
 
 # Labels
 WAR_SIGNUP_DESCRIPTION = f'*Please click on {YES_EMOJI} if you wish to participate.*'
 GAME_POLL_LABEL = 'Game Poll'
+WAR_PERF_VERIFICATION = '*Remember to take a screenshot of your **War Performance** (Performance Tab)*'
 
 # Messages
-DM_SURVEY_INTRO_TITLE = 'Welcome to Wardens!'
+DM_SURVEY_INTRO_TITLE = 'Hello there!'
 DM_SURVEY_INTRO_DESCRIPTION = 'We do not have your data in our database. ' \
                               '\nPlease tell us more about you before we can place you in our roster.'
+DM_SURVEY_INTRO_TITLE_POST_WAR = 'We do not have your data in our database!'
+DM_SURVEY_INTRO_DESCRIPTION_POST_WAR = 'Please tell us more about yourself'
 DM_SURVEY_RETURNING_PLAYER_MESSAGE = 'Welcome back!'
 DM_SURVEY_UPDATE_PROMPT = '*Would you like to update your data?*'
 GAME_POLL_MESSAGE = 'What other games besides New World would you be interested in playing with us this week?' \
@@ -125,7 +129,7 @@ def get_deactivation_msg(bot):
     return f'{bot.user.name} is online but deactivated. Type ".activate" command for activation.'
 
 
-async def get_interaction(bot, ctx, options, title='_ _'):
+async def get_interaction(bot, ctx, options, title='_ _', timeout=600):
     custom_id = uuid.uuid4().hex
     await ctx.send(
         title,
@@ -136,7 +140,7 @@ async def get_interaction(bot, ctx, options, title='_ _'):
             )
         ],
     )
-    interaction = await bot.wait_for("select_option", check=lambda inter: inter.custom_id == custom_id, timeout=600)
+    interaction = await bot.wait_for("select_option", check=lambda inter: inter.custom_id == custom_id, timeout=timeout)
     await interaction.send(content=f"{interaction.values[0]} selected")
 
     return interaction.values[0]

@@ -1,6 +1,7 @@
 import datetime
 import discord
 import utils
+import spreadsheet
 
 
 async def select_zone(ctx, bot):
@@ -89,6 +90,9 @@ async def start_selection(ctx, bot, cmd_prefix):
 
         if confirm == utils.YES:
             await announce(ctx=ctx, bot=bot, cmd_prefix=cmd_prefix, zone=zone, offense=offense, date=date, time=time)
+            spreadsheet.append_to_sheet(sheet_id=spreadsheet.SPREADSHEET_WAR_ATTENDANCE_ID,
+                                        _range=spreadsheet.TAB_ALL_WARS,
+                                        data=[[date, time, zone, offense]])
     except Exception as e:
         await ctx.send(e)
 
@@ -110,7 +114,7 @@ def get_war_content(message):
 
     zone = ' '.join(message[:index_offense])
     offense = message[index_offense]
-    # time = message[index_offense+2]
-    date = message[index_offense+3]
+    # time = message[index_offense + 2]
+    date = message[-1]
 
     return [offense, zone, date]

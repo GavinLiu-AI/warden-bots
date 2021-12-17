@@ -113,7 +113,7 @@ async def get_company(bot, user):
 def user_id_exists(data, user_id):
     ids = [int(row[0]) for row in data]
     for id in ids:
-        if user_id == id:
+        if int(user_id) == id:
             return True
     return False
 
@@ -146,11 +146,16 @@ async def get_company_prompts(bot, user):
     return company, is_warden
 
 
-async def start_survey(bot, user):
+async def start_survey(bot, user, post_war=False):
     # Send intro message
-    embed = discord.Embed(title=utils.DM_SURVEY_INTRO_TITLE,
-                          description=utils.DM_SURVEY_INTRO_DESCRIPTION,
-                          colour=discord.Colour.gold())
+    if not post_war:
+        embed = discord.Embed(title=utils.DM_SURVEY_INTRO_TITLE,
+                              description=utils.DM_SURVEY_INTRO_DESCRIPTION,
+                              colour=discord.Colour.gold())
+    else:
+        embed = discord.Embed(title=utils.DM_SURVEY_INTRO_TITLE_POST_WAR,
+                              description=utils.DM_SURVEY_INTRO_DESCRIPTION_POST_WAR,
+                              colour=discord.Colour.gold())
     await user.send(embed=embed)
 
     ign = await get_ign(bot, user)
@@ -165,11 +170,11 @@ async def start_survey(bot, user):
     return data
 
 
-async def update_player_data(bot, user, player_data):
+async def update_player_data(bot, user, player_data, post_war=False):
     try:
         options = utils.OPTIONS_UPDATES
 
-        title = 'Would you like to update your data?'
+        title = 'Was this your build for the war?' if post_war else 'Would you like to update your build?'
         description = get_player_info(player_data) + '\n\n*Select **Done** if everything is up-to-date*'
         embed = discord.Embed(title=title,
                               description=description,
@@ -207,18 +212,18 @@ async def update_player_data(bot, user, player_data):
         await user.send(e)
 
 
-async def send_dm(bot, user, war_content=None):
+async def send_dm(bot, user, war_content=None, post_war=None):
     try:
-        all_data = spreadsheet.read_sheet(sheet_id=utils.SPREADSHEET_WAR_ID, _range=utils.TAB_DATA)
+        all_data = spreadsheet.read_sheet(sheet_id=spreadsheet.SPREADSHEET_WAR_ID, _range=spreadsheet.TAB_DATA)
         player_exist = user_id_exists(all_data, user.id)
 
         if not player_exist:
-            player_data = await start_survey(bot, user)
+            player_data = await start_survey(bot, user, post_war)
 
             if war_content:
                 spreadsheet.upload_war_signup(data=player_data + war_content)
         else:
-            player_data = all_data[spreadsheet.get_user_index(_range=utils.TAB_DATA, user_id=user.id)]
+            player_data = all_data[spreadsheet.get_user_index(_range=spreadsheet.TAB_DATA, user_id=user.id)]
             if war_content:
                 spreadsheet.upload_war_signup(data=player_data + war_content)
 

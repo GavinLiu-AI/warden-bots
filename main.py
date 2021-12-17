@@ -1,20 +1,61 @@
 from discord_components import ComponentsBot
+from discord.ext import tasks
+import discord
 import configs
 import spreadsheet
 import utils
 import role_selection
 import war_declaration
 import poll as pll
+import war_performance as wp
 
 # TODO: change command prefix
-bot = ComponentsBot('/')
+bot = ComponentsBot('/', intents=discord.Intents.all())
 awake = True
 cmd_prefix = bot.command_prefix
+current_war = None
+
+
+@tasks.loop(seconds=5)
+async def war_channel_monitor():
+    global current_war
+
+    try:
+        # TODO: change
+        # if cmd_prefix != '.':
+        #     return
+
+        spreadsheet_war = wp.get_current_war()
+        if current_war != spreadsheet_war:
+            if current_war:
+                await wp.end_current_war()
+
+            current_war = spreadsheet_war
+
+        if current_war:
+            await wp.track_vc_members(bot, current_war)
+
+    except Exception as e:
+        await utils.log_in_channel(bot, e)
+
+
+@tasks.loop(seconds=5)
+async def dm_war_perf():
+    try:
+        # TODO: change
+        # if cmd_prefix != '.':
+        #     return
+
+        await wp.dm_screenshots_prompts(bot)
+    except Exception as e:
+        await utils.log_in_channel(bot, e)
 
 
 @bot.event
 async def on_ready():
     print(bot.user)
+    war_channel_monitor.start()
+    dm_war_perf.start()
 
 
 @bot.event
@@ -42,13 +83,22 @@ async def on_raw_reaction_add(payload):
             if emoji_name == utils.YES_EMOJI:
                 await role_selection.send_dm(bot, user, war_content=war_content)
             else:
-                all_data = spreadsheet.read_sheet(sheet_id=utils.SPREADSHEET_WAR_ID, _range=utils.TAB_DATA)
-                player_data = all_data[spreadsheet.get_user_index(_range=utils.TAB_DATA, user_id=user.id)] + war_content
+                all_data = spreadsheet.read_sheet(sheet_id=spreadsheet.SPREADSHEET_WAR_ID, _range=spreadsheet.TAB_DATA)
+                player_data = all_data[spreadsheet.get_user_index(_range=spreadsheet.TAB_DATA,
+                                                                  user_id=user.id)] + war_content
                 spreadsheet.upload_war_signup(data=player_data)
 
         # Game Poll
         elif utils.message_in_embeds(message=utils.GAME_POLL_LABEL, embeds=message.embeds):
             await pll.dm_game(bot, user)
+
+        elif utils.description_in_embeds(description=utils.WAR_PERF_VERIFICATION, embeds=message.embeds):
+            if emoji_name == utils.YES_EMOJI:
+                title = message.embeds[0].title.split(' ')[4:]
+                war_content = wp.get_war_content(title)
+                await wp.dm_screenshots(bot, user, war_content)
+            else:
+                await wp.end_message(user)
     except Exception as e:
         await utils.log_in_channel(bot, e)
 

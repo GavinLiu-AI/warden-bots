@@ -4,7 +4,7 @@ import spreadsheet
 
 
 async def init_game_poll(ctx, bot):
-    data = spreadsheet.read_sheet(sheet_id=utils.SPREADSHEET_GAME_POLL_ID, _range=utils.TAB_PARTICIPANTS)
+    data = spreadsheet.read_sheet(sheet_id=spreadsheet.SPREADSHEET_GAME_POLL_ID, _range=spreadsheet.TAB_PARTICIPANTS)
 
     if data:
         title = 'On-going game poll'
@@ -24,7 +24,7 @@ async def init_game_poll(ctx, bot):
 
 async def add_game_prompt(bot, user):
     try:
-        data = spreadsheet.read_sheet(sheet_id=utils.SPREADSHEET_GAME_POLL_ID, _range=utils.TAB_GAMES)
+        data = spreadsheet.read_sheet(sheet_id=spreadsheet.SPREADSHEET_GAME_POLL_ID, _range=spreadsheet.TAB_GAMES)
 
         options = utils.OPTIONS_YES_NO
         title = 'Would you like to add a game?'
@@ -64,13 +64,13 @@ async def update_games(bot, user):
             await user.send(embed=embed)
             return
 
-        data = spreadsheet.read_sheet(sheet_id=utils.SPREADSHEET_GAME_POLL_ID, _range=utils.TAB_GAMES)
+        data = spreadsheet.read_sheet(sheet_id=spreadsheet.SPREADSHEET_GAME_POLL_ID, _range=spreadsheet.TAB_GAMES)
         games = [d[0] for d in data]
         for new_game in new_games:
             if new_game not in games:
                 spreadsheet.append_to_sheet(
-                    sheet_id=utils.SPREADSHEET_GAME_POLL_ID,
-                    _range=utils.TAB_GAMES,
+                    sheet_id=spreadsheet.SPREADSHEET_GAME_POLL_ID,
+                    _range=spreadsheet.TAB_GAMES,
                     data=[[new_game, 1]])
 
     except Exception as e:
@@ -81,7 +81,7 @@ async def vote_games(bot, user):
     try:
         voted = []
         for i in range(3):
-            data = spreadsheet.read_sheet(sheet_id=utils.SPREADSHEET_GAME_POLL_ID, _range=utils.TAB_GAMES)
+            data = spreadsheet.read_sheet(sheet_id=spreadsheet.SPREADSHEET_GAME_POLL_ID, _range=spreadsheet.TAB_GAMES)
             games = set([d[0] for d in data]) - set(voted)
 
             options = [utils.OPTION_DONE] + sorted(games)
@@ -100,10 +100,10 @@ async def vote_games(bot, user):
             voted.append(game)
 
             index, votes = spreadsheet.get_game_index(game)
-            spreadsheet.update_sheet_data(sheet_id=utils.SPREADSHEET_GAME_POLL_ID, data=[[game, votes + 1]],
-                                          _range=utils.TAB_GAMES + f'!A{index + 2}')
+            spreadsheet.update_sheet_data(sheet_id=spreadsheet.SPREADSHEET_GAME_POLL_ID, data=[[game, votes + 1]],
+                                          _range=spreadsheet.TAB_GAMES + f'!A{index + 2}')
 
-        spreadsheet.append_to_sheet(sheet_id=utils.SPREADSHEET_GAME_POLL_ID, _range=utils.TAB_PARTICIPANTS,
+        spreadsheet.append_to_sheet(sheet_id=spreadsheet.SPREADSHEET_GAME_POLL_ID, _range=spreadsheet.TAB_PARTICIPANTS,
                                     data=[[str(user.id)]])
 
     except Exception as e:
@@ -112,7 +112,7 @@ async def vote_games(bot, user):
 
 async def dm_game(bot, user):
     try:
-        participants = spreadsheet.read_sheet(utils.SPREADSHEET_GAME_POLL_ID, utils.TAB_PARTICIPANTS)
+        participants = spreadsheet.read_sheet(spreadsheet.SPREADSHEET_GAME_POLL_ID, spreadsheet.TAB_PARTICIPANTS)
         participants = [p[0] for p in participants]
         if str(user.id) in participants:
             title = 'Seems like you have already voted'
@@ -160,7 +160,7 @@ async def announce_winners(bot, winners, almost_won):
 
 
 async def end_game_poll(ctx, bot):
-    data = spreadsheet.read_sheet(sheet_id=utils.SPREADSHEET_GAME_POLL_ID, _range=utils.TAB_GAMES)
+    data = spreadsheet.read_sheet(sheet_id=spreadsheet.SPREADSHEET_GAME_POLL_ID, _range=spreadsheet.TAB_GAMES)
     if not data:
         await ctx.send('Cannot fetch data, please message X.')
     else:
