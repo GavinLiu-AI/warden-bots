@@ -22,8 +22,8 @@ async def war_channel_monitor():
 
     try:
         # TODO: change
-        # if cmd_prefix != '.':
-        #     return
+        if cmd_prefix != '.':
+            return
 
         spreadsheet_war = wp.get_current_war()
         if current_war != spreadsheet_war:
@@ -43,8 +43,8 @@ async def war_channel_monitor():
 async def dm_war_perf():
     try:
         # TODO: change
-        # if cmd_prefix != '.':
-        #     return
+        if cmd_prefix != '.':
+            return
 
         await wp.dm_screenshots_prompts(bot)
     except Exception as e:
